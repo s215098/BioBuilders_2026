@@ -88,3 +88,42 @@ Saved the cleaned structure via:
  Save: wrote "~/BioBuilders_2026/UPOs/8RNJ_cleaned.cif".
 
 ![alt text](8RNJ_cleaned.png)
+
+**Maybe try Molecular Docking of cleaned 8RNJ with the substrate**
+to see if it can tell us something about the binding of the ligand.
+
+From my notes:
+“used to predict the three-dimensional (3D) structure of the complex between a protein receptor and small molecule (i.e., a drug) and the affinity between them”
+
+webserver: https://www.swissdock.ch/ 
+
+**Preparing the pdb file:**
+
+Folding sequence with AF2 to include the missing regions
+Truncate the PDB file by removing the long loop tail in the end 
+have to remove all heteroatoms - DONT THINK ITS THE CASE FOR US SINCE HEME GROUP IS PART OF ACTIVE SITE???
+‘remove hetatm'
+
+Download compound from PubChem and convert to .mol2 file via export Molecule function (DONE)
+
+**Steps for docking:**
+
+Autodock Vina på swissdock.ch
+
+“Submit ligand”
+
+“Submit target”
+
+define the search box based on knowledge about active site.
+
+“Select parameters” = maximum 10. - is something about how much it searches - it's not exhaustive search.
+“Increase the sampling exhaustivity to increase the amount of computational effort.”
+
+Download results as zip files.
+
+**Steps for analyzing results:**
+
+- open with PyMOL all the binding poses file **vina_dock.pdbqt** and the receptor file **system.pdbqt** along with reference structure. ****
+- Examine each of the docking binding poses and explore the surrounding environment of the ligand and identify the protein residues involved in the binding.
+- Compare the binding poses with respect to the reference structure.
+- Also consider the score associated with each binding pose (from the webserver or within the vina_dock.pdbqt).
