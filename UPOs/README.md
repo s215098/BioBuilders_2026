@@ -68,6 +68,8 @@ Got 64 hits. All unreviewed from the TrEMBL.
 Downloaded fasta file with all results:
 "uniprotkb_unspecific_peroxygenase_2026_02_07.fasta"
 
+https://pubs.acs.org/doi/10.1021/acschembio.4c00504
+
 ### Looking at structures for one of them:
 PDB from first hit: 8RNJ
 Downloaded from pdb: "Download Files" -> "PDBx/mmCIF Format". Called 8RNJ.cif
@@ -127,3 +129,11 @@ Download results as zip files.
 - Examine each of the docking binding poses and explore the surrounding environment of the ligand and identify the protein residues involved in the binding.
 - Compare the binding poses with respect to the reference structure.
 - Also consider the score associated with each binding pose (from the webserver or within the vina_dock.pdbqt).
+
+## PDB search
+searched advanced search: structure title has exact phrase Unspecific Peroxygenase
+resulting in 50 structures
+downloaded to pdb files in batch located in this folder: PDBsearch_structures_07_02_2026
+pdb files were unzipped via gunzip UPOs/PDBsearch_structures_07_02_2026/* in terminal
+
+Maybe do the same with these - or qualitative investigation of which are better???
