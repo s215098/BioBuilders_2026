@@ -1,6 +1,10 @@
 
 # Investigating UPOs as potential enzymes for breakdown of epoxy resins
 
+## Task list
+- [ ] Here's a task that we need to do
+- [x] Here's a task that we have completed
+
 ## About UPOs - chat quick overview
 
 ### Key properties
@@ -58,8 +62,9 @@ Sustainable materials research
 Enzyme cascade designs
 Strong link to bioremediation & circular bioeconomy
 
+## Methods - what did we do
 
-## Uniprot search
+### Uniprot search
 Initially, an advanced search was carried out on Uniprot, to find potential Unspecific Peroxygenases (UPOs) and investigate their functions. UPOs are fungal enzymes that include a heme group in their active sites. 
 
 Advanced search: “(protein_name:"unspecific peroxygenase")”
@@ -70,7 +75,7 @@ Downloaded fasta file with all results:
 
 https://pubs.acs.org/doi/10.1021/acschembio.4c00504
 
-### Looking at structures for one of them:
+#### Looking at structures for one of them:
 PDB from first hit: 8RNJ
 Downloaded from pdb: "Download Files" -> "PDBx/mmCIF Format". Called 8RNJ.cif
 Opened in PyMol and cleaned with these commands:
@@ -90,6 +95,23 @@ Saved the cleaned structure via:
  Save: wrote "~/BioBuilders_2026/UPOs/8RNJ_cleaned.cif".
 
 ![alt text](8RNJ_cleaned.png)
+
+
+### PDB search
+searched advanced search: structure title has exact phrase Unspecific Peroxygenase
+resulting in 50 structures
+downloaded to pdb files in batch located in this folder: PDBsearch_structures_07_02_2026
+pdb files were unzipped via gunzip UPOs/PDBsearch_structures_07_02_2026/* in terminal
+
+Maybe do the same with these - or qualitative investigation of which are better
+
+
+### Doing Multiple Sequence Alignment
+
+Using the instructions from Kristians course:
+
+
+## Other possible methods / things to do.
 
 **Maybe try Molecular Docking of cleaned 8RNJ with the substrate**
 to see if it can tell us something about the binding of the ligand.
@@ -129,11 +151,3 @@ Download results as zip files.
 - Examine each of the docking binding poses and explore the surrounding environment of the ligand and identify the protein residues involved in the binding.
 - Compare the binding poses with respect to the reference structure.
 - Also consider the score associated with each binding pose (from the webserver or within the vina_dock.pdbqt).
-
-## PDB search
-searched advanced search: structure title has exact phrase Unspecific Peroxygenase
-resulting in 50 structures
-downloaded to pdb files in batch located in this folder: PDBsearch_structures_07_02_2026
-pdb files were unzipped via gunzip UPOs/PDBsearch_structures_07_02_2026/* in terminal
-
-Maybe do the same with these - or qualitative investigation of which are better???
