@@ -2,8 +2,18 @@
 # Investigating UPOs as potential enzymes for breakdown of epoxy resins
 
 ## Task list
+
+** How to do tasks in markdown **
 - [ ] Here's a task that we need to do
 - [x] Here's a task that we have completed
+
+** Our tasks **
+- [x] Finding possible UPOs
+- [ ] MSA (MAFFT) of UPOs
+- [ ] Molecular Docking of the UPOs standing out.
+
+
+
 
 ## About UPOs - chat quick overview
 
