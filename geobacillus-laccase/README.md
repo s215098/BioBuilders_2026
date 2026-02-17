@@ -4,6 +4,9 @@ From this paper: https://doi.org/10.1007/s11356-024-34095-y (available in Google
 
 ![](figures/laccase-degradation-bpa-vs-badge.png)
 
+
+## UniProt Search
+
 Next step is to search for these enzymes. Authors mention that they used NCBI, we are gonna start with UniProt
 
 1. Head to: https://www.uniprot.org/
@@ -23,7 +26,31 @@ Alternatively we could type this in the search bar:
 
 5. By clicking on the Download button and choosing 'FASTA' as the format we retrieve the sequences in a FASTA file. The file can be found under *data/* named *uniparc_protein_name_Laccase_AND_taxo_2026_02_16.fasta*.
 
-6. Then we can proceed to visualization with Phylogenetic tree or Logo plots
+6. Then we can proceed to visualization with Phylogenetic tree or Logo plots.
 
 
+## NCBI Search
+
+Similar to UniProt we are gonna use advanced search on NCBI to search for laccases from Geobacillus Stearothermophilus
+
+1. Head to: https://www.ncbi.nlm.nih.gov/
+
+2. Click on Proteins to the left panel
+
+3. Change from All Databases to Protein and hit Search
+
+4. Click on Advanced, fill in information, as shown in the figure below and hit Search:
+
+![](figures/ncbi-protein-advanced-search-geobacillus-stearothermophilus.png)
+
+Alternatively we could type this in the search bar:
+- (Laccase[Protein Name]) AND Geobacillus Stearothermophilus[Organism]
+
+5. You should see the following results:
+
+![](figures/ncbi-protein-advanced-search-geobacillus-stearothermophilus-results.png)
+
+6. Scroll down and Click *Send to* --> *File* --> *FASTA*. Corresponding FASTA file is located under *data/* named *ncbi_protein_protein_name_Laccase_AND_taxo_2026_02_16.fasta*.
+
+7. As with UniProt we can proceed to visualization with Phylogenetic tree or Logo plots.
 
