@@ -118,7 +118,33 @@ Maybe do the same with these - or qualitative investigation of which are better
 
 ### Doing Multiple Sequence Alignment
 
-Using the instructions from Kristians course:
+#### For our Uniprot results
+
+Creating the environment:
+'conda create -n msa_env python=3.10'
+
+Activating the environment:
+'conda activate msa_env'
+
+Install mafft via bioconda:
+'conda install -c bioconda mafft'
+
+Make configurations:
+'''
+conda config --add channels defaults
+conda config --add channels bioconda
+conda config --add channels conda-forge
+conda config --set channel_priority strict
+'''
+
+Check that mafft was succesfully installed:
+'mafft --version'
+
+Run Multiple Sequence Alignment:
+'mafft --auto UPOs/uniprotkb_unspecific_peroxygenase_07_02_2026.fasta > uniprot_upos_mafft_aligned.fasta'
+
+**Making the phylogenic tree**
+
 
 
 ## Other possible methods / things to do.
