@@ -1,0 +1,7 @@
+Date: Wed 18 Feb 2026 12:56:11 
+Ligand: BADGE.mol2
+Method: Vina
+Target: 8RNJ_cleaned.pdb
+Sampling exhaustivity: 45
+Box size: 20 20 20
+Box center: 2.0 1.0 21.0
