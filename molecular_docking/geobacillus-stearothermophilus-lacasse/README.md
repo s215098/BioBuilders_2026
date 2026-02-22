@@ -48,4 +48,6 @@
 
 3. Open 6TOY with Pymol and then in the same Pymol session open the "6T0Y_BADGE_blind_docking_results.pdbqt" file
 
-4. Iterate through different docking poses using the arrows in the bottom right panel
+4. Iterate through different docking poses using the arrows in the bottom right panel. 
+
+5. Type "split_states results" to split the ligand poses into different objects inside Pymol. To get position of a certain pose click on it and choose "A" --> "center" and then in the command line "get_position".

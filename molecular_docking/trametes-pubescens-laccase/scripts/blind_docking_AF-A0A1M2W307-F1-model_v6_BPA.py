@@ -30,7 +30,7 @@ def get_receptor_center_and_size(pdb_file):
     return center.tolist(), size.tolist()
 
 # Usage in your script:
-receptor_path = '../molecules/6T0Y_clean_h_meeko.pdbqt'
+receptor_path = '../molecules/AF-A0A1M2W307-F1-model_v6_clean_h_meeko.pdbqt'
 center_coords, box_dims = get_receptor_center_and_size(receptor_path)
 
 print(f"Calculated Center: {center_coords}")
@@ -41,7 +41,7 @@ v = Vina(sf_name='vina')
 
 v.set_receptor(receptor_path)
 
-suppl = Chem.SDMolSupplier('../molecules/BADGE.sdf')
+suppl = Chem.SDMolSupplier('../molecules/BPA.sdf')
 mol = next(suppl)
 mol_with_h = Chem.AddHs(mol)
 AllChem.EmbedMolecule(mol_with_h, AllChem.ETKDG())
@@ -59,4 +59,4 @@ v.set_ligand_from_string(pdbqt_string)
 # Blind docking typically requires higher exhaustiveness 
 # because the search space is much larger than a pocket
 v.dock(exhaustiveness=64, n_poses=20)
-v.write_poses('../molecules/6T0Y_BADGE_blind_docking_results.pdbqt', n_poses=20, overwrite=True)
+v.write_poses('../molecules/AF-A0A1M2W307-F1-model_v6_BPA_blind_docking_results.pdbqt', n_poses=20, overwrite=True)
