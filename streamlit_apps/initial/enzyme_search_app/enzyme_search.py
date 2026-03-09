@@ -1,6 +1,6 @@
 import streamlit as st
 
-st.title("Enzyme Search")
+st.title("Enzyme Search (Example)")
 
 # some example content for the enzyme search page
 
