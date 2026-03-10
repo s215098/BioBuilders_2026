@@ -111,7 +111,7 @@ def main():
 
     # 7. Write Results
     v.write_poses(out_filepath, n_poses=args.n_poses, overwrite=True)
-    print(f"✅ Docking complete! Results saved to {out_filepath}")
+    print(f"Docking complete. Results saved to {out_filepath}")
 
 if __name__ == "__main__":
     main()
