@@ -106,3 +106,8 @@ This is the curated sequence space, which has around 150 sequences (curated.faa 
  A strategy could be to choose one candidate from each clade (colored bar) and test it in our pipeline
 
 ![](./Images/Curated.png)
+
+Once you choose the area/node you want to keep, you can click on the node and select Copy leaves ID
+![](./Images/Screenshot%202026-03-16%20at%2018.32.34.png)
+
+Then, paste these IDs into the python script curated.py and you'll obtain a curated.faa file with your curated sequences only
