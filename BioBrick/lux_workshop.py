@@ -161,7 +161,7 @@ h1, h2, h3 { font-family: 'Space Mono', monospace !important; }
 .reaction-eq {
     font-family: 'Space Mono', monospace;
     font-size: 0.76rem;
-    color: #3a5a7a;
+    color: #2a6aaa;
     text-align: center;
     padding: 0.7rem 1rem;
     border: 1px dashed #1a2a3a;
@@ -252,17 +252,24 @@ hr { border-color: #1a2a3a !important; }
 </style>
 """, unsafe_allow_html=True)
 
+
+
+
+
 # ── Session state ─────────────────────────────────────────────────────────────
 if "blast_done" not in st.session_state:
     st.session_state.blast_done = False
 if "docking_done" not in st.session_state:
     st.session_state.docking_done = False
 
+
+
+
 # ── Header ────────────────────────────────────────────────────────────────────
 st.markdown("# 🧬 Operation Bioluminescence")
 st.markdown(
     "<div style='font-family:Space Mono,monospace;font-size:0.72rem;"
-    "color:#2a4a6c;letter-spacing:0.18em;text-transform:uppercase;"
+    "color:#2a6aaa;letter-spacing:0.18em;text-transform:uppercase;"
     "margin-bottom:1.8rem;'>iGEM Biobrick Workshop · Protein ID + Molecular Docking</div>",
     unsafe_allow_html=True,
 )
@@ -272,20 +279,21 @@ st.markdown("""
 <div class="story-banner">
   <div class="label">// mission briefing</div>
   A biotech startup has engineered <em>E. coli</em> to produce a bioluminescent reporter —
-  but the strain stays completely dark. Their lead scientist left behind only one clue:
+  but the strain stays completely dark. Their lead scientist is suddenly missing and left behind only one clue for them to fix it:
   a raw protein sequence and a note reading <strong style="color:#c8d6e8;">"find what it eats."</strong>
   <br><br>
   Your team must identify the mystery enzyme using BLAST, locate its 3D crystal structure,
   then use molecular docking to determine which of three candidate substrates actually
   fits the active site. Get it right, and your organism <strong style="color:#00cc66;">lights up</strong>.
   <br><br>
-  <span style="color:#3a5a7a;font-size:0.82rem;font-family:'Space Mono',monospace;">The reaction you are trying to unlock:</span>
+  <span style="color:#2a6aaa;font-size:0.82rem;font-family:'Space Mono',monospace;">The reaction you are trying to unlock:</span>
   <div class="reaction-eq" style="margin-top:0.5rem;">
     LuxAB &nbsp;+&nbsp; FMNH₂ &nbsp;+&nbsp; O₂ &nbsp;+&nbsp; R‑CHO &nbsp;→&nbsp;
     FMN &nbsp;+&nbsp; R‑COOH &nbsp;+&nbsp; H₂O &nbsp;+&nbsp; <strong>hν (490 nm)</strong>
   </div>
 </div>
 """, unsafe_allow_html=True)
+
 
 # ── Progress bar ──────────────────────────────────────────────────────────────
 s2 = "active" if st.session_state.blast_done else ""
@@ -300,6 +308,7 @@ st.markdown(f"""
   <span class="progress-label">Glow ✓</span>
 </div>
 """, unsafe_allow_html=True)
+
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # STEP 1 — BLAST
@@ -318,20 +327,20 @@ st.markdown("""
     &nbsp;• Annotated function and any catalytic residues<br>
     &nbsp;• PDB accession (you'll need it in Step 2)<br><br>
     <a class="step-link" href="https://blast.ncbi.nlm.nih.gov/Blast.cgi?PROGRAM=blastp&PAGE_TYPE=BlastSearch" target="_blank">↗ Open NCBI blastp</a>
-    <a class="step-link" href="https://www.uniprot.org" target="_blank">↗ Open UniProt</a>
-    <a class="step-link" href="https://www.rcsb.org" target="_blank">↗ Open RCSB PDB</a>
   </div>
 </div>
 """, unsafe_allow_html=True)
 
 st.markdown("""
 <div class="sequence-box">>mystery_protein_iGEM2026
-MSKDIIAKELEELGIPMSSIGWKAGQNIPYSVHTSYFAHHWGDKLTPEDMKQMLETHGIP
-VFAHHSYTNNPEYAAAFAEQFGAQVWLSSRTPEDMREMLKQAGIEAQHAPYLTPEQIAEW
-LQSHPDVKIPVIGHVWNNPNPEHAASFAEELGAKVWLSSRTPEDMREMLKQAGIEASDAP
-YLTPEQIAEWLASHPDVKIPVMGHVWNNPNPEYAASFAQELGAKVWLSSRTPEDMREMLK
-QAGIEAQHAPYLTPEQIAEWLASHPDVKIPVMGHVWNNPNPEYAASFAQELGAKVWLSSR
-TPDEMQNMLAQHGIPVFAHHSYTNNPEYAAAFAEQFGAQVMGH</div>
+MEDAKNIKKGPAPFYPLEDGTAGEQLHKAMKRYALVPGTIAFTDAHIEVNITYAEYFEMSVRLAEAMKRY
+GLNTNHRIVVCSENSLQFFMPVLGALFIGVAVAPANDIYNERELLNSMNISQPTVVFVSKKGLQKILNVQ
+KKLPIIQKIIIMDSKTDYQGFQSMYTFVTSHLPPGFNEYDFVPESFDRDKTIALIMNSSGSTGLPKGVAL
+PHRTACVRFSHARDPIFGNQIIPDTAILSVVPFHHGFGMFTTLGYLICGFRVVLMYRFEEELFLRSLQDY
+KIQSALLVPTLFSFFAKSTLIDKYDLSNLHEIASGGAPLSKEVGEAVAKRFHLPGIRQGYGLTETTSAIL
+ITPEGDDKPGAVGKVVPFFEAKVVDLDTGKTLGVNQRGELCVRGPMIMSGYVNNPEATNALIDKDGWLHS
+GDIAYWDEDEHFFIVDRLKSLIKYKGYQVAPAELESILLQHPNIFDAGVAGLPDDDAGELPAAVVVLEHG
+KTMTEKEIVDYVASQVTTAKKLRGGVVFVDEVPKGLTGKLDARKIREILIKAKKGGKSKL</div>
 """, unsafe_allow_html=True)
 
 st.markdown("""
@@ -342,80 +351,95 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-blast_confirmed = st.checkbox("✓  I've identified the protein and noted the PDB structure ID", key="blast_cb")
-if blast_confirmed:
-    st.session_state.blast_done = True
-    st.markdown("""
-    <div style="font-family:'Space Mono',monospace;font-size:0.78rem;color:#2a8a4a;
-    padding:0.4rem 0 0;letter-spacing:0.05em;line-height:1.6;">
-    ✓ You should have found: <strong>LuxA</strong> — bacterial luciferase α subunit,
-    <em>Aliivibrio fischeri</em>. The best available crystal structure is
-    <strong>PDB: 3FGC</strong> (<em>V. harveyi</em>, ~85% identity to <em>A. fischeri</em> LuxA).
-    Use 3FGC for docking in the steps below.
-    </div>
-    """, unsafe_allow_html=True)
+st.markdown("""
+    Copy the accession of the best hit (100% identity), go to Uniprot and search for the protein structure.
+    <br><br>
+    Navigate to the structure section and from the first three hits pick the one with the highest resolution (lowest Å).
+    <br><br>
+    Note down the PDB ID, open the PDB and search for it here. Have a quick look at the PDB entry and structure.
+    <br><br>
+    <a class="step-link" href="https://www.uniprot.org" target="_blank">↗ Open UniProt</a>
+    <a class="step-link" href="https://www.rcsb.org" target="_blank">↗ Open RCSB PDB</a>
+""", unsafe_allow_html=True)
+
+# blast_confirmed = st.checkbox("✓  I've identified the protein and noted the PDB structure ID", key="blast_cb")
+# if blast_confirmed:
+#     st.session_state.blast_done = True
+#     st.markdown("""
+#     <div style="font-family:'Space Mono',monospace;font-size:0.78rem;color:#2a8a4a;
+#     padding:0.4rem 0 0;letter-spacing:0.05em;line-height:1.6;">
+#     ✓ You should have found: <strong>LuxA</strong> — bacterial luciferase α subunit,
+#     <em>Aliivibrio fischeri</em>. The best available crystal structure is
+#     <strong>PDB: 3FGC</strong> (<em>V. harveyi</em>, ~85% identity to <em>A. fischeri</em> LuxA).
+#     Use 3FGC for docking in the steps below.
+#     </div>
+#     """, unsafe_allow_html=True)
 
 st.markdown("---")
+
+
+
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # STEP 2 — Prepare receptor
 # ═══════════════════════════════════════════════════════════════════════════════
-st.markdown("""
-<div class="step-card">
-  <div class="step-number">// Step 02 — Receptor prep</div>
-  <div class="step-title">Prepare the LuxA structure for docking</div>
-  <div class="step-body">
-    AutoDock Vina needs the receptor as a <strong>.pdbqt file</strong>
-    (PDB format with partial charges and atom types added).
-    <br><br>
-    <strong>1. Download the structure</strong><br>
-    Fetch <span class="tag">3FGC</span> from RCSB as a PDB file.<br><br>
-    <a class="step-link" href="https://www.rcsb.org/structure/3FGC" target="_blank">↗ 3FGC on RCSB PDB</a>
-    <a class="step-link" href="https://www.cgl.ucsf.edu/chimera/download.html" target="_blank">↗ Download UCSF Chimera</a>
-    <a class="step-link" href="https://pymol.org/2/" target="_blank">↗ Download PyMOL</a>
-    <br><br>
-    <strong>2. Clean and convert in AutoDockTools (ADT)</strong><br>
-    &nbsp;• File → Read Molecule → open <code>3FGC.pdb</code><br>
-    &nbsp;• Edit → Delete Water<br>
-    &nbsp;• Select chain B (LuxB) → delete (keep chain A only)<br>
-    &nbsp;• Edit → Hydrogens → Add → Polar Only<br>
-    &nbsp;• Edit → Charges → Compute Gasteiger<br>
-    &nbsp;• Grid → Macromolecule → Choose → save as <code>3FGC_receptor.pdbqt</code><br><br>
-    <a class="step-link" href="https://autodocksuite.scripps.edu/adt/" target="_blank">↗ Download AutoDockTools</a>
-    <a class="step-link" href="https://autodock-vina.readthedocs.io/en/latest/docking_basic.html" target="_blank">↗ Vina prep guide</a>
-    <br><br>
-    <strong>3. Define the docking search box</strong><br>
-    The active site is centred on residue <strong>Cys106</strong>.
-    Use these coordinates in your Vina config file:
-  </div>
-</div>
-""", unsafe_allow_html=True)
+# st.markdown("""
+# <div class="step-card">
+#   <div class="step-number">// Step 02 — Receptor prep</div>
+#   <div class="step-title">Prepare the LuxA structure for docking</div>
+#   <div class="step-body">
+#     AutoDock Vina needs the receptor as a <strong>.pdbqt file</strong>
+#     (PDB format with partial charges and atom types added).
+#     <br><br>
+#     <strong>1. Download the structure</strong><br>
+#     Fetch <span class="tag">3FGC</span> from RCSB as a PDB file.<br><br>
+#     <a class="step-link" href="https://www.rcsb.org/structure/3FGC" target="_blank">↗ 3FGC on RCSB PDB</a>
+#     <a class="step-link" href="https://www.cgl.ucsf.edu/chimera/download.html" target="_blank">↗ Download UCSF Chimera</a>
+#     <a class="step-link" href="https://pymol.org/2/" target="_blank">↗ Download PyMOL</a>
+#     <br><br>
+#     <strong>2. Clean and convert in AutoDockTools (ADT)</strong><br>
+#     &nbsp;• File → Read Molecule → open <code>3FGC.pdb</code><br>
+#     &nbsp;• Edit → Delete Water<br>
+#     &nbsp;• Select chain B (LuxB) → delete (keep chain A only)<br>
+#     &nbsp;• Edit → Hydrogens → Add → Polar Only<br>
+#     &nbsp;• Edit → Charges → Compute Gasteiger<br>
+#     &nbsp;• Grid → Macromolecule → Choose → save as <code>3FGC_receptor.pdbqt</code><br><br>
+#     <a class="step-link" href="https://autodocksuite.scripps.edu/adt/" target="_blank">↗ Download AutoDockTools</a>
+#     <a class="step-link" href="https://autodock-vina.readthedocs.io/en/latest/docking_basic.html" target="_blank">↗ Vina prep guide</a>
+#     <br><br>
+#     <strong>3. Define the docking search box</strong><br>
+#     The active site is centred on residue <strong>Cys106</strong>.
+#     Use these coordinates in your Vina config file:
+#   </div>
+# </div>
+# """, unsafe_allow_html=True)
 
-st.markdown("""
-<div class="code-block">center_x = 12.5
-center_y =  8.3
-center_z = 22.1
-size_x   = 20
-size_y   = 20
-size_z   = 22
-exhaustiveness = 8</div>
-""", unsafe_allow_html=True)
+# st.markdown("""
+# <div class="code-block">center_x = 12.5
+# center_y =  8.3
+# center_z = 22.1
+# size_x   = 20
+# size_y   = 20
+# size_z   = 22
+# exhaustiveness = 8</div>
+# """, unsafe_allow_html=True)
 
-st.markdown("""
-<div class="hint-box">
-  💡 Open <code>3FGC_receptor.pdbqt</code> in Chimera or PyMOL and verify that
-  the search box covers the pocket where FMN is co-crystallised — that is the active site.
-</div>
-""", unsafe_allow_html=True)
+# st.markdown("""
+# <div class="hint-box">
+#   💡 Open <code>3FGC_receptor.pdbqt</code> in Chimera or PyMOL and verify that
+#   the search box covers the pocket where FMN is co-crystallised — that is the active site.
+# </div>
+# """, unsafe_allow_html=True)
 
-st.markdown("---")
+# st.markdown("---")
+
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # STEP 3 — Prepare ligands
 # ═══════════════════════════════════════════════════════════════════════════════
 st.markdown("""
 <div class="step-card">
-  <div class="step-number">// Step 03 — Ligand prep</div>
+  <div class="step-number">// Step 02 — Ligand prep</div>
   <div class="step-title">Prepare the three candidate substrates</div>
   <div class="step-body">
     Download each molecule as a 3D SDF file from PubChem, then convert to
@@ -469,12 +493,13 @@ st.markdown("""
 
 st.markdown("---")
 
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # STEP 4 — Run Vina
 # ═══════════════════════════════════════════════════════════════════════════════
 st.markdown("""
 <div class="step-card">
-  <div class="step-number">// Step 04 — Docking</div>
+  <div class="step-number">// Step 03 — Docking</div>
   <div class="step-title">Run AutoDock Vina — three times</div>
   <div class="step-body">
     Run one docking job per ligand. Use the <strong>same receptor and same box</strong>
@@ -642,3 +667,26 @@ tetrahedral intermediate &nbsp;→&nbsp; chemiluminescent decay &nbsp;→&nbsp; 
   form the required tetrahedral intermediate. Look at your dodecanal score again.
 </div>
 """, unsafe_allow_html=True)
+            
+
+
+
+
+# ── Sidebar ──────────────────────────────────────────────────────────────────
+
+with st.sidebar:
+    st.markdown("## 📚 References")
+    
+    st.markdown("**Protein & Structure**")
+    st.markdown("- Enzyme structure: https://alphafold.ebi.ac.uk/entry/AF-0000000065991333")
+    
+    st.markdown("**Ligands on PubChem**")
+    st.markdown("- ")
+    st.markdown("- ")
+    st.markdown("- ")
+    
+    st.markdown("**Key papers**")
+    st.markdown("- https://www.ncbi.nlm.nih.gov/books/NBK23212/")
+    
+    st.markdown("---")
+    st.markdown("<div style='font-size:0.75rem; color: gray;'>iGEM Biobrick Workshop</div>", unsafe_allow_html=True)
