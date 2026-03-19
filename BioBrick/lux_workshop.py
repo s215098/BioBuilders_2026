@@ -28,7 +28,7 @@ h1, h2, h3 { font-family: 'Space Mono', monospace !important; }
 
 .step-number {
     font-family: 'Space Mono', monospace;
-    font-size: 0.65rem;
+    font-size: 0.85rem;
     font-weight: 700;
     letter-spacing: 0.18em;
     text-transform: uppercase;
@@ -39,7 +39,7 @@ h1, h2, h3 { font-family: 'Space Mono', monospace !important; }
 
 .step-title {
     font-family: 'Space Mono', monospace;
-    font-size: 1rem;
+    font-size: 1.5rem;
     font-weight: 700;
     color: #c8d6e8;
     margin-bottom: 0.7rem;
@@ -314,66 +314,56 @@ st.markdown(f"""
 # STEP 1 — BLAST
 # ═══════════════════════════════════════════════════════════════════════════════
 st.markdown("""
-<div class="step-card active">
-  <div class="step-number active">// Step 01 — BLAST</div>
-  <div class="step-title">Identify the mystery enzyme</div>
-  <div class="step-body">
+<div class='step-card active'>
+  <div class='step-number active'>// Step 01 — Identifying Mystery Enzyme</div>
+  <div class='step-title'>Identify the mystery enzyme</div>
+  <strong>1) NCBI </strong>
+  <div class='step-body'>
     Copy the sequence below and run a <strong>blastp</strong> search against
     UniProtKB/Swiss-Prot to identify the protein, its organism, and its function.
-    <br><br>
-    <strong>What to record from your results:</strong><br>
-    &nbsp;• Top hit name, organism, and gene name<br>
-    &nbsp;• % identity and E-value<br>
-    &nbsp;• Annotated function and any catalytic residues<br>
-    &nbsp;• PDB accession (you'll need it in Step 2)<br><br>
-    <a class="step-link" href="https://blast.ncbi.nlm.nih.gov/Blast.cgi?PROGRAM=blastp&PAGE_TYPE=BlastSearch" target="_blank">↗ Open NCBI blastp</a>
+    <a class='step-link' href="https://blast.ncbi.nlm.nih.gov/Blast.cgi?PROGRAM=blastp&PAGE_TYPE=BlastSearch" target="_blank">↗ Open NCBI blastp</a>
+  </div>
+  <div class='sequence-box'>>mystery_protein_iGEM2026
+    MEDAKNIKKGPAPFYPLEDGTAGEQLHKAMKRYALVPGTIAFTDAHIEVNITYAEYFEMSVRLAEAMKRY
+    GLNTNHRIVVCSENSLQFFMPVLGALFIGVAVAPANDIYNERELLNSMNISQPTVVFVSKKGLQKILNVQ
+    KKLPIIQKIIIMDSKTDYQGFQSMYTFVTSHLPPGFNEYDFVPESFDRDKTIALIMNSSGSTGLPKGVAL
+    PHRTACVRFSHARDPIFGNQIIPDTAILSVVPFHHGFGMFTTLGYLICGFRVVLMYRFEEELFLRSLQDY
+    KIQSALLVPTLFSFFAKSTLIDKYDLSNLHEIASGGAPLSKEVGEAVAKRFHLPGIRQGYGLTETTSAIL
+    ITPEGDDKPGAVGKVVPFFEAKVVDLDTGKTLGVNQRGELCVRGPMIMSGYVNNPEATNALIDKDGWLHS
+    GDIAYWDEDEHFFIVDRLKSLIKYKGYQVAPAELESILLQHPNIFDAGVAGLPDDDAGELPAAVVVLEHG
+    KTMTEKEIVDYVASQVTTAKKLRGGVVFVDEVPKGLTGKLDARKIREILIKAKKGGKSKL</div>
+    <div class='step-body'>
+    Note down the accession number of the best hit (100% identity) for the next step.
+  </div>
+  <br>
+            
+  <strong>2) Uniprot </strong>
+    <div class='step-body'>
+    go to Uniprot and search for the protein structure.
+    ...
+    Navigate to the structure section and from the first three hits pick the one with the highest resolution (lowest Å).
+    Note down the PDB ID for the next step.
+    <a class='step-link' href="https://www.uniprot.org" target="_blank">↗ Open UniProt</a>
+  </div>
+  <br>
+
+  <strong>2) PDB </strong>
+    <div class='step-body'>
+    Open the PDB and search for it here. Have a quick look at the PDB entry and structure.      
+    <a class='step-link' href="https://www.rcsb.org" target="_blank">↗ Open RCSB PDB</a>
   </div>
 </div>
-""", unsafe_allow_html=True)
-
-st.markdown("""
-<div class="sequence-box">>mystery_protein_iGEM2026
-MEDAKNIKKGPAPFYPLEDGTAGEQLHKAMKRYALVPGTIAFTDAHIEVNITYAEYFEMSVRLAEAMKRY
-GLNTNHRIVVCSENSLQFFMPVLGALFIGVAVAPANDIYNERELLNSMNISQPTVVFVSKKGLQKILNVQ
-KKLPIIQKIIIMDSKTDYQGFQSMYTFVTSHLPPGFNEYDFVPESFDRDKTIALIMNSSGSTGLPKGVAL
-PHRTACVRFSHARDPIFGNQIIPDTAILSVVPFHHGFGMFTTLGYLICGFRVVLMYRFEEELFLRSLQDY
-KIQSALLVPTLFSFFAKSTLIDKYDLSNLHEIASGGAPLSKEVGEAVAKRFHLPGIRQGYGLTETTSAIL
-ITPEGDDKPGAVGKVVPFFEAKVVDLDTGKTLGVNQRGELCVRGPMIMSGYVNNPEATNALIDKDGWLHS
-GDIAYWDEDEHFFIVDRLKSLIKYKGYQVAPAELESILLQHPNIFDAGVAGLPDDDAGELPAAVVVLEHG
-KTMTEKEIVDYVASQVTTAKKLRGGVVFVDEVPKGLTGKLDARKIREILIKAKKGGKSKL</div>
-""", unsafe_allow_html=True)
-
-st.markdown("""
-<div class="hint-box">
-  💡 In NCBI blastp, set the database to <strong>UniProtKB/Swiss-Prot</strong>
-  (not nr) for faster, cleaner results. Leave everything else at default.
-  Your top hit should have an E-value close to 0.
 </div>
+    
 """, unsafe_allow_html=True)
 
-st.markdown("""
-    Copy the accession of the best hit (100% identity), go to Uniprot and search for the protein structure.
-    <br><br>
-    Navigate to the structure section and from the first three hits pick the one with the highest resolution (lowest Å).
-    <br><br>
-    Note down the PDB ID, open the PDB and search for it here. Have a quick look at the PDB entry and structure.
-    <br><br>
-    <a class="step-link" href="https://www.uniprot.org" target="_blank">↗ Open UniProt</a>
-    <a class="step-link" href="https://www.rcsb.org" target="_blank">↗ Open RCSB PDB</a>
-""", unsafe_allow_html=True)
+with st.expander("💡 Hint"):
+    st.markdown("""
+    <div class='hint-box'>
+      Your hint text here.
+    </div>
+    """, unsafe_allow_html=True)
 
-# blast_confirmed = st.checkbox("✓  I've identified the protein and noted the PDB structure ID", key="blast_cb")
-# if blast_confirmed:
-#     st.session_state.blast_done = True
-#     st.markdown("""
-#     <div style="font-family:'Space Mono',monospace;font-size:0.78rem;color:#2a8a4a;
-#     padding:0.4rem 0 0;letter-spacing:0.05em;line-height:1.6;">
-#     ✓ You should have found: <strong>LuxA</strong> — bacterial luciferase α subunit,
-#     <em>Aliivibrio fischeri</em>. The best available crystal structure is
-#     <strong>PDB: 3FGC</strong> (<em>V. harveyi</em>, ~85% identity to <em>A. fischeri</em> LuxA).
-#     Use 3FGC for docking in the steps below.
-#     </div>
-#     """, unsafe_allow_html=True)
 
 st.markdown("---")
 
@@ -383,160 +373,95 @@ st.markdown("---")
 # ═══════════════════════════════════════════════════════════════════════════════
 # STEP 2 — Prepare receptor
 # ═══════════════════════════════════════════════════════════════════════════════
-# st.markdown("""
-# <div class="step-card">
-#   <div class="step-number">// Step 02 — Receptor prep</div>
-#   <div class="step-title">Prepare the LuxA structure for docking</div>
-#   <div class="step-body">
-#     AutoDock Vina needs the receptor as a <strong>.pdbqt file</strong>
-#     (PDB format with partial charges and atom types added).
-#     <br><br>
-#     <strong>1. Download the structure</strong><br>
-#     Fetch <span class="tag">3FGC</span> from RCSB as a PDB file.<br><br>
-#     <a class="step-link" href="https://www.rcsb.org/structure/3FGC" target="_blank">↗ 3FGC on RCSB PDB</a>
-#     <a class="step-link" href="https://www.cgl.ucsf.edu/chimera/download.html" target="_blank">↗ Download UCSF Chimera</a>
-#     <a class="step-link" href="https://pymol.org/2/" target="_blank">↗ Download PyMOL</a>
-#     <br><br>
-#     <strong>2. Clean and convert in AutoDockTools (ADT)</strong><br>
-#     &nbsp;• File → Read Molecule → open <code>3FGC.pdb</code><br>
-#     &nbsp;• Edit → Delete Water<br>
-#     &nbsp;• Select chain B (LuxB) → delete (keep chain A only)<br>
-#     &nbsp;• Edit → Hydrogens → Add → Polar Only<br>
-#     &nbsp;• Edit → Charges → Compute Gasteiger<br>
-#     &nbsp;• Grid → Macromolecule → Choose → save as <code>3FGC_receptor.pdbqt</code><br><br>
-#     <a class="step-link" href="https://autodocksuite.scripps.edu/adt/" target="_blank">↗ Download AutoDockTools</a>
-#     <a class="step-link" href="https://autodock-vina.readthedocs.io/en/latest/docking_basic.html" target="_blank">↗ Vina prep guide</a>
-#     <br><br>
-#     <strong>3. Define the docking search box</strong><br>
-#     The active site is centred on residue <strong>Cys106</strong>.
-#     Use these coordinates in your Vina config file:
-#   </div>
-# </div>
-# """, unsafe_allow_html=True)
-
-# st.markdown("""
-# <div class="code-block">center_x = 12.5
-# center_y =  8.3
-# center_z = 22.1
-# size_x   = 20
-# size_y   = 20
-# size_z   = 22
-# exhaustiveness = 8</div>
-# """, unsafe_allow_html=True)
-
-# st.markdown("""
-# <div class="hint-box">
-#   💡 Open <code>3FGC_receptor.pdbqt</code> in Chimera or PyMOL and verify that
-#   the search box covers the pocket where FMN is co-crystallised — that is the active site.
-# </div>
-# """, unsafe_allow_html=True)
-
-# st.markdown("---")
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# STEP 3 — Prepare ligands
-# ═══════════════════════════════════════════════════════════════════════════════
 st.markdown("""
 <div class="step-card">
-  <div class="step-number">// Step 02 — Ligand prep</div>
-  <div class="step-title">Prepare the three candidate substrates</div>
+  <div class="step-number active">// Step 02 — Mystery Substrates </div>
+  <div class="step-title">Download the substrates</div>
   <div class="step-body">
-    Download each molecule as a 3D SDF file from PubChem, then convert to
-    <strong>.pdbqt</strong> using Meeko (command line) or AutoDockTools.
-    All three molecules share a 12-carbon chain or an aldehyde group —
-    but only one is the real LuxA substrate.
+    Download these three mystery substrates. They have already been converted to mol2 format for docking.
   </div>
 </div>
 """, unsafe_allow_html=True)
 
-st.markdown("""
-<div class="mol-grid">
-  <div class="mol-card">
-    <div class="mol-name">Dodecanal</div>
-    <div class="mol-formula">C₁₂H₂₄O · CID 8194</div>
-    <div class="mol-links">
-      <a class="step-link" href="https://pubchem.ncbi.nlm.nih.gov/compound/8194" target="_blank">↗ PubChem page</a>
-      <a class="step-link" href="https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/CID/8194/SDF?record_type=3d" target="_blank">↓ Download 3D SDF</a>
-    </div>
-  </div>
-  <div class="mol-card">
-    <div class="mol-name">Hexanal</div>
-    <div class="mol-formula">C₆H₁₂O · CID 6184</div>
-    <div class="mol-links">
-      <a class="step-link" href="https://pubchem.ncbi.nlm.nih.gov/compound/6184" target="_blank">↗ PubChem page</a>
-      <a class="step-link" href="https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/CID/6184/SDF?record_type=3d" target="_blank">↓ Download 3D SDF</a>
-    </div>
-  </div>
-  <div class="mol-card">
-    <div class="mol-name">Dodecanol</div>
-    <div class="mol-formula">C₁₂H₂₆O · CID 8193</div>
-    <div class="mol-links">
-      <a class="step-link" href="https://pubchem.ncbi.nlm.nih.gov/compound/8193" target="_blank">↗ PubChem page</a>
-      <a class="step-link" href="https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/CID/8193/SDF?record_type=3d" target="_blank">↓ Download 3D SDF</a>
-    </div>
-  </div>
-</div>
-""", unsafe_allow_html=True)
+# ── Molecule download cards ───────────────────────────────────────────────────
+molecules = [
+    {
+        "name": "Substrate 1",
+        "file": "Homophthalic-acid.mol2",
+        "label": "↓ Download substrate 1",
+    },
+    {
+        "name": "Substrate 2",
+        "file": "2D1S_substrate.mol2",
+        "label": "↓ Download substrate 2",
+    },
+    {
+        "name": "Substrate 3",
+        "file": "1H-Indole-3-Proprionic_acid.mol2",
+        "label": "↓ Download substrate 3",
+    },
+]
 
-st.markdown("""
-<div class="hint-box">
-  💡 <strong>Converting SDF → .pdbqt with Meeko (recommended):</strong><br><br>
-  <span style="color:#4a9a6a;font-family:'Space Mono',monospace;">pip install meeko</span><br>
-  <span style="color:#4a9a6a;font-family:'Space Mono',monospace;">mk_prepare_ligand.py -i dodecanal.sdf -o dodecanal.pdbqt</span><br><br>
-  Repeat for hexanal and dodecanol. The direct download links above fetch
-  the 3D conformer automatically — make sure you don't use a 2D SDF by mistake.
-  <br><br>
-  <a class="step-link" href="https://github.com/forlilab/Meeko" target="_blank">↗ Meeko on GitHub</a>
-</div>
-""", unsafe_allow_html=True)
+cols = st.columns(3)
+for col, mol in zip(cols, molecules):
+    with col:
+        st.markdown(f"""
+        <div class="mol-card">
+          <div class="mol-name">{mol["name"]}</div>
+        </div>
+        """, unsafe_allow_html=True)
+        with open(mol["file"], "rb") as f:
+            st.download_button(
+                label=mol["label"],
+                data=f,
+                file_name=mol["file"],
+                mime="chemical/x-pdbqt",
+                use_container_width=True,
+                key=mol["file"],
+            )
 
 st.markdown("---")
 
 
+
+
+
 # ═══════════════════════════════════════════════════════════════════════════════
-# STEP 4 — Run Vina
+# STEP 3 — Run Vina
 # ═══════════════════════════════════════════════════════════════════════════════
 st.markdown("""
 <div class="step-card">
-  <div class="step-number">// Step 03 — Docking</div>
-  <div class="step-title">Run AutoDock Vina — three times</div>
+  <div class="step-number active">// Step 03 — Docking</div>
+  <div class="step-title">Run AutoDock Vina for each substrate</div>
+  <strong>1) Navigate to Autodock Vina </strong>
   <div class="step-body">
-    Run one docking job per ligand. Use the <strong>same receptor and same box</strong>
-    for all three so your scores are directly comparable.
-    <br><br>
-    <a class="step-link" href="https://vina.scripps.edu/downloads/" target="_blank">↗ Download AutoDock Vina</a>
-    <a class="step-link" href="https://autodock-vina.readthedocs.io/en/latest/" target="_blank">↗ Vina documentation</a>
-    <br><br>
-    <strong>Create a config file</strong> (<code>config.txt</code>) with your receptor path
-    and the box coordinates from Step 2:
+    You should now run one docking job with your enzyme and each substrate to be able to compare the scores.
+    Open the Swissdock website from the link below. Then navigate to the Autodock Vina tab. 
+    <a class="step-link" href="https://www.swissdock.ch" target="_blank">↗ Swissprot website</a>
   </div>
-</div>
-""", unsafe_allow_html=True)
-
-st.markdown("""
-<div class="code-block">receptor = 3FGC_receptor.pdbqt
-center_x = 12.5
-center_y =  8.3
-center_z = 22.1
-size_x   = 20
-size_y   = 20
-size_z   = 22
-exhaustiveness = 8
-num_modes = 5</div>
-""", unsafe_allow_html=True)
-
-st.markdown("""
-<div class="hint-box">
-  <strong>Run each ligand from the terminal:</strong><br><br>
-  <span style="color:#4a9a6a;font-family:'Space Mono',monospace;">
-  vina --config config.txt --ligand dodecanal.pdbqt --out dodecanal_out.pdbqt<br>
-  vina --config config.txt --ligand hexanal.pdbqt    --out hexanal_out.pdbqt<br>
-  vina --config config.txt --ligand dodecanol.pdbqt  --out dodecanol_out.pdbqt
-  </span><br><br>
-  Each run prints a table of binding modes. Record the <strong>Mode 1</strong>
-  affinity (kcal/mol) for each — that is your best score.
-  <strong>More negative = better binding.</strong>
+  <strong>2) Upload ligand and target </strong>
+  <div class="step-body">
+    Upload one of the three ligands (substrate .mol2 files) and press "Prepare Ligand".
+    Then upload the target structure (The protein pdb) and press "Prepare Target".
+  </div>
+  <strong>3) Define search space  </strong>
+  <div class="step-body">
+    Define the search space for docking by entering the following parameters:
+    <br>
+    Search box center: 20 - 17 - 8
+    <br>
+    Search box size: 25 - 30 - 25
+    <br>
+    You should now see a box appear on the 3D structure — this is the area where the docking algorithm will search for potential binding poses. 
+    From literature, we found that the active site should be in here.
+  </div>
+  <strong>4) Select parameters and run docking </strong>
+  <div class="step-body">
+    Finally, set the Sampling exhaustivity to 15.
+    Then click "Run Docking" and wait for the results to be generated. This may take some minutes and might take longer if many jobs are in the queue.
+    When the docking is done, the results appear on the screen.
+  </div>
+    
 </div>
 """, unsafe_allow_html=True)
 
@@ -559,21 +484,40 @@ st.markdown("""
 
 col1, col2, col3 = st.columns(3)
 with col1:
-    score_a = st.number_input("Dodecanal (kcal/mol)", value=0.0, step=0.1, format="%.1f", key="sa")
+    score_a = st.number_input("Substrate 1 (kcal/mol)", value=0.0, step=0.1, format="%.1f", key="sa")
 with col2:
-    score_b = st.number_input("Hexanal (kcal/mol)", value=0.0, step=0.1, format="%.1f", key="sb")
+    score_b = st.number_input("Substrate 2 (kcal/mol)", value=0.0, step=0.1, format="%.1f", key="sb")
 with col3:
-    score_c = st.number_input("Dodecanol (kcal/mol)", value=0.0, step=0.1, format="%.1f", key="sc")
+    score_c = st.number_input("Substrate 3 (kcal/mol)", value=0.0, step=0.1, format="%.1f", key="sc")
+
+# Check the scores:
+if st.button("Check Scores"):
+    errors = []
+
+    if not (-8 <= score_a <= -4): # The Homophthalic-acid
+        errors.append("Substrate 1")
+    if not (-10 >= score_b): # The right substrate should be below 10.
+        errors.append("Substrate 2")
+    if not (-9 <= score_c < -5): # 1H-Indole-3-Proprionic acid
+        errors.append("Substrate 3")
+
+    if errors:
+        st.warning("One or more scores don't look right — please double check the Mode 1 affinity values from your AutoDock Vina output. Remember: all values should be negative (kcal/mol)." \
+        "If you put the right scores already, ask one from the DTU BioBuilder team to help you.")
+    else:
+        st.success("Scores look good! Now select the correct substrate from the dropdown below and see if your organism glows.")           
+
+
 
 st.markdown("<div style='height:0.5rem'></div>", unsafe_allow_html=True)
 
 substrate = st.selectbox(
-    "Which substrate gives the best binding affinity to LuxA?",
-    options=["— select —", "Dodecanal (C12 aldehyde)", "Hexanal (C6 aldehyde)", "Dodecanol (C12 alcohol)"],
+    "Which substrate gives the best binding affinity to your enzyme?",
+    options=["— select —", "Substrate 1", "Substrate 2", "Substrate 3"],
 )
 
 # ── Petri dish ────────────────────────────────────────────────────────────────
-correct  = substrate == "Dodecanal (C12 aldehyde)"
+correct  = substrate == "Substrate 2"
 answered = substrate != "— select —"
 
 if answered:
@@ -594,41 +538,19 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
+
 # ── Feedback ──────────────────────────────────────────────────────────────────
 if answered:
     if correct:
         st.markdown(
-            '<div class="success-msg">✓ CORRECT — dodecanal is the natural substrate. Organism is luminescent.</div>',
+            '<div class="success-msg">✓ CORRECT! —  Your chosen substrate was the right substrate, DLSA.'
+            ' It is a </div>',
             unsafe_allow_html=True,
         )
         st.balloons()
 
         st.markdown("---")
-        st.markdown("### Why dodecanal wins")
-
-        st.markdown("""
-<div class="explain-box">
-  <strong style="color:#c8d6e8;">Chain length matters.</strong>
-  The LuxA active site contains a deep hydrophobic channel lined with residues
-  Leu42, Val77, and Leu109 that snugly accommodates a long aliphatic tail (~C10–C14).
-  Dodecanal (C12) fills this channel completely and positions its aldehyde carbonyl
-  directly adjacent to the catalytic <strong style="color:#c8d6e8;">Cys106</strong>.<br><br>
-  <strong style="color:#c8d6e8;">Hexanal (C6)</strong> has the right functional group
-  but the short chain leaves the hydrophobic pocket only half-occupied —
-  resulting in weaker binding and poor catalytic geometry.<br><br>
-  <strong style="color:#c8d6e8;">Dodecanol (C12)</strong> may actually dock with a
-  reasonable score — the chain length is right — but the hydroxyl (–OH) group
-  cannot be attacked by Cys106. The mechanism requires an <strong style="color:#c8d6e8;">
-  aldehyde carbon (–CHO)</strong> as the electrophilic target.
-</div>
-""", unsafe_allow_html=True)
-
-        st.markdown("""
-<div class="reaction-eq">
-Cys106–SH &nbsp;→&nbsp; nucleophilic attack on R‑CHO &nbsp;→&nbsp;
-tetrahedral intermediate &nbsp;→&nbsp; chemiluminescent decay &nbsp;→&nbsp; <strong>hν (490 nm)</strong>
-</div>
-""", unsafe_allow_html=True)
+        st.markdown("### Why DLSA wins")
 
         st.markdown("""
 <div class="explain-box" style="margin-top:1rem;">
@@ -670,23 +592,17 @@ tetrahedral intermediate &nbsp;→&nbsp; chemiluminescent decay &nbsp;→&nbsp; 
             
 
 
+# ── References ──────────────────────────────────────────────────────────────────
+st.markdown("### 📚 References")
+    
+st.markdown("**Enzyme & Substrates**")
+st.markdown("- Enzyme structure: https://www.rcsb.org/structure/2D1S")
+st.markdown("- Substrate 1 - XXX: ")
+st.markdown("- Substrate 2 - DLSA: ")
+st.markdown("- Substrate 3 - XXX: ")
 
+st.markdown("**Key papers**")
+st.markdown("- https://www.nature.com/articles/nature04542")
 
-# ── Sidebar ──────────────────────────────────────────────────────────────────
-
-with st.sidebar:
-    st.markdown("## 📚 References")
-    
-    st.markdown("**Protein & Structure**")
-    st.markdown("- Enzyme structure: https://alphafold.ebi.ac.uk/entry/AF-0000000065991333")
-    
-    st.markdown("**Ligands on PubChem**")
-    st.markdown("- ")
-    st.markdown("- ")
-    st.markdown("- ")
-    
-    st.markdown("**Key papers**")
-    st.markdown("- https://www.ncbi.nlm.nih.gov/books/NBK23212/")
-    
-    st.markdown("---")
-    st.markdown("<div style='font-size:0.75rem; color: gray;'>iGEM Biobrick Workshop</div>", unsafe_allow_html=True)
+st.markdown("---")
+st.markdown("<div style='font-size:0.75rem; color: gray;'>iGEM Biobrick Workshop</div>", unsafe_allow_html=True)
