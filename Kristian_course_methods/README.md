@@ -11,8 +11,8 @@ The general idea/workflow for finding a **curated sequence space** is:
 ## The seed
 Any sequence based search needs a starting point (the seed). We chose to go with the ItL-03 enzyme (see the Laccase folder/rahnella-sasipa) from [Sasipa's paper](https://www.google.com/url?sa=t&source=web&rct=j&opi=89978449&url=https://ediss.sub.uni-hamburg.de/bitstream/ediss/12070/1/Dissertation_Wongwattanarat_2025.pdf&ved=2ahUKEwiflLaE3qSTAxVkFhAIHXfsLcQQFnoECBgQAQ&usg=AOvVaw0SuIwQJiliTKCi3YQHx0FH). As the sequence is not available on UniProt, we decided to paste the sequence into [InterPro](https://www.ebi.ac.uk/interpro/) to see which superfamilier/PFAMs/domains it had. The results can be found under this [search ID](https://www.ebi.ac.uk/interpro/result/InterProScan/iprscan5-R20260314-134933-0509-65071606-p1m/). 
 Some (maybe) interesting data:
-- *Superfamily*: Multicopper oxidases (MCO)
-- *PFAMs*: PF07732 & PF07731. PFAM is a comprehensive, widely used database of **protein families and domains**. It's not based on BLAST for homology search, but on HMMs. [Wikipedia](https://en.wikipedia.org/wiki/Pfam#:~:text=The%20general%20purpose%20of%20the,then%20each%20frame%20is%20searched.)
+- *Superfamily*: [Multicopper oxidases (MCO)](https://www.ebi.ac.uk/interpro/entry/InterPro/IPR045087/)
+- *PFAMs*: PF07732 & PF07731. PFAM is a comprehensive, widely used database of **protein families and domains**. It's not based on BLAST for homology search, but on HMMs. [Wikipedia](https://en.wikipedia.org/wiki/Pfam#:~:text=The%20general%20purpose%20of%20the,then%20each%20frame%20is%20searched.). [doi for wiki](https://doi.org/10.1093/nar/gkaa913)
 - It has *3 domains/active sites*, as confirmed by Sasipa's paper
 
 ![](./images/Screenshot%202026-03-16%20at%2016.45.28.png)
@@ -24,7 +24,7 @@ We chose to search for other proteins of the same superfamily. We searched for I
 
 ![](./Images/Screenshot%202026-03-16%20at%2016.44.48.png)
 
-Before using Kristians CUPP3 programme, it's important to homology reduce the sequences using mmseqs2. This is basically to avoid redundancy, i.e. 2 or more sequences which are more than 90% similar. You can do this either [online](https://toolkit.tuebingen.mpg.de/tools/mmseqs2) by pasting the fasta file into the tool, or locally on your computer. 
+Before using Kristians CUPP3 programme, it's important to homology reduce the sequences using [mmseqs2](https://doi.org/10.1038/nbt.3988). This is basically to avoid redundancy, i.e. 2 or more sequences which are more than 90% similar. You can do this either [online](https://toolkit.tuebingen.mpg.de/tools/mmseqs2) by pasting the fasta file into the tool, or locally on your computer. 
 
 I'd recommend using a local conda environment for the mmseqs clustering if run locally, and especially for Kristian's CUPP3 program. Here's how I did it:
 ```
@@ -47,7 +47,7 @@ mmseqs --version
 mmseqs easy-cluster input.faa OUT_FOLDER tmp --min-seq-id 0.9
 ```
 
-Either way, you get the clustered output file `your_sequences_cluster_rep_seq.fasta` and `your_sequences_cluster_all_seq.fasta`. The first one is the reduced one, with only the representative sequences of each cluster left, and the second one still has all the sequences ordered by groups. 
+Either way, with the input `your_sequences.fasta` you'd get the clustered output file `your_sequences_cluster_rep_seq.fasta` and `your_sequences_cluster_all_seq.fasta`. The first one is the reduced one, with only the representative sequences of each cluster left, and the second one still has all the sequences ordered by groups. 
 
 For example, if the sequences of >CueO, >Itl03, and >HHM1 have more than 90% similarity, the mmseqs algorithm will group them into one cluster. The `your_sequences_cluster_all_seq.fasta` will display them like this: 
 ```

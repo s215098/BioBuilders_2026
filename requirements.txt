@@ -1,7 +1,0 @@
-streamlit==1.54.0
-numpy==2.4.2
-py3Dmol==2.5.4
-stmol==0.0.9
-vina==1.2.7
-rdkit==2025.9.5
-meeko==0.7.1
