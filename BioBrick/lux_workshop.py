@@ -1,4 +1,8 @@
 import streamlit as st
+from pathlib import Path
+
+# Defining app path
+HERE = Path(__file__).parent
 
 st.set_page_config(
     page_title="Operation Bioluminescence",
@@ -390,18 +394,21 @@ st.markdown("""
 molecules = [
     {
         "name": "Substrate 1",
-        "file": "Homophthalic-acid.mol2",
+        "file": HERE / "Homophthalic-acid.mol2",
         "label": "↓ Download substrate 1",
+        "filename": "Homophthalic-acid.mol2",
     },
     {
         "name": "Substrate 2",
-        "file": "2D1S_substrate.mol2",
+        "file": HERE / "2D1S_substrate.mol2",
         "label": "↓ Download substrate 2",
+        "filename": "2D1S_substrate.mol2",
     },
     {
         "name": "Substrate 3",
-        "file": "1H-Indole-3-Proprionic_acid.mol2",
+        "file": HERE / "1H-Indole-3-Proprionic_acid.mol2",
         "label": "↓ Download substrate 3",
+        "filename": "1H-Indole-3-Proprionic_acid.mol2",
     },
 ]
 
@@ -417,10 +424,10 @@ for col, mol in zip(cols, molecules):
             st.download_button(
                 label=mol["label"],
                 data=f,
-                file_name=mol["file"],
-                mime="chemical/x-pdbqt",
+                file_name=mol["filename"],  # just the filename for the download
+                mime="chemical/x-mol2",
                 use_container_width=True,
-                key=mol["file"],
+                key=mol["filename"],
             )
 
 st.markdown("---")
