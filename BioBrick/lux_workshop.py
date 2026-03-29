@@ -675,10 +675,5 @@ with st.expander("📚 **References**", expanded=False):
     st.markdown("**DLSA as intermediate analogue**")
     st.markdown("- Inouye S. (2010). Firefly luciferase: an adenylate-forming enzyme for multicatalytic functions. *Cellular and Molecular Life Sciences*, 67, 387–404. https://doi.org/10.1007/s00018-009-0170-8")
 
-    st.markdown("**Substrates**")
-    st.markdown("- Substrate 1 — Homophthalic acid: https://pubchem.ncbi.nlm.nih.gov/compound/68141")
-    st.markdown("- Substrate 2 — DLSA: https://pubchem.ncbi.nlm.nih.gov/compound/44134943")
-    st.markdown("- Substrate 3 — Indole-3-propionic acid: https://pubchem.ncbi.nlm.nih.gov/compound/3744")
-
     st.markdown("---")
     st.markdown("<div style='font-size:0.75rem; color: gray;'>iGEM Biobrick Workshop · DTU BioBuilders</div>", unsafe_allow_html=True)
