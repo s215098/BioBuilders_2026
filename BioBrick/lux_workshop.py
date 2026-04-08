@@ -655,13 +655,22 @@ if answered:
         </div>
         """, unsafe_allow_html=True)
 
-        with open("vina_dock.pdbqt", "rb") as f:
+        # Using HERE to add the right path - will ensure that it also works remotely.
+        with open(HERE / "vina_dock.pdbqt", "rb") as f:
             st.download_button(
                 label="⬇️ Download results pdbqt file",
                 data=f,
                 file_name="vina_dock.pdbqt",
                 mime="chemical/x-pdbqt"
             )
+
+        # with open("vina_dock.pdbqt", "rb") as f:
+        #     st.download_button(
+        #         label="⬇️ Download results pdbqt file",
+        #         data=f,
+        #         file_name="vina_dock.pdbqt",
+        #         mime="chemical/x-pdbqt"
+        #     )
 
 
 
