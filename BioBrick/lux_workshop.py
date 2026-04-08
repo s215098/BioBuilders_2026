@@ -372,6 +372,11 @@ st.markdown("""
     
 """, unsafe_allow_html=True)
 
+with st.expander("💡 Hint - step 1 (Only open if you had problems with the accession number)"):
+    st.markdown("""
+    The correct accession number is P13129, not P13129.1. The version number (the part after the dot) is not needed for the next steps, and if included it will lead you to a dead end in Uniprot.
+    """, unsafe_allow_html=True)
+
 with st.expander("💡 Hint - step 2"):
     st.markdown("""
       To answer the questions: "What's its function? And from what organism (and organelle) does it originate?",
