@@ -1,3 +1,9 @@
+# Info
+# The PDB 2D1S (Japanese Firely luciferase in complex with DLSA
+# The Uniprot group should be a Luciferin 4-monooxygenase with the accession number P13129
+# Their substa
+
+
 import streamlit as st
 from pathlib import Path
 
@@ -336,16 +342,18 @@ st.markdown("""
     UniProtKB/Swiss-Prot to identify the protein, its organism, and its function.
     <a class='step-link' href="https://blast.ncbi.nlm.nih.gov/Blast.cgi?PROGRAM=blastp&PAGE_TYPE=BlastSearch" target="_blank">↗ Open NCBI blastp</a>
   </div>
-  <div class='sequence-box'>>mystery_protein_iGEM2026
+  <div class='sequence-box'>>mystery_protein_iGEM2026<br>
     MENMENDENIVVGPKPFYPIEEGSAGTQLRKYMERYAKLGAIAFTNAVTGVDYSYAEYLEKSCCLGKALQNYGLVVDGRIALCSENCEEFFIPVIAGLFIGVGVAPTNEIYTLRELVHSLGISKPTIVFSSKKGLDKVITVQKTVTTIKTIVILDSKVDYRGYQCLDTFIKRNTPPGFQASSFKTVEVDRKEQVALIMNSSGSTGLPKGVQLTHENIVTRFSHARDPIYGNQVSPGTAVLTVVPFHHGFGMFTTLGYLICGFRVVMLTKFDEETFLKTLQDYKCTSVILVPTLFAILNKSELLNKYDLSNLVEIASGGAPLSKEVGEAVARRFNLPGVRQGYGLTETTSAIIITPEGDDKPGASGKVVPLFKAKVIDLDTKKSLGPNRRGEVCVKGPMLMKGYVNNPEATKELIDEEGWLHTGDIGYYDEEKHFFIVDRLKSLIKYKGYQVPPAELESVLLQHPSIFDAGVAGVPDPVAGELPGAVVVLESGKNMTEKEVMDYVASQVSNAKRLRGGVRFVDEVPKGLTGKIDGRAIREILKKPVAKM</div>
     <div class='step-body'>
-    Note down the accession number of the best hit (100% identity) for the next step.
+    Note down the accession number of the best hit (highest Percentage Identity (with 100% coverage in this case)) for the next step.<br>
+    <span style="color:#e8a020;font-weight:700;">⚠ Attention!</span> Only keep the number up until the <strong>dot</strong>, as the rest is the version number.<br>
+    For example, if the accession number is L21124.1, only keep L21124.
   </div>
   <br>
             
   <strong>2) Uniprot </strong>
     <div class='step-body'>
-    Go to Uniprot and search for the protein accession number that you copied from NCBI.
+    Go to Uniprot and search for the protein accession number that you copied from NCBI (again - only including the first part before the dot/version number).
     Have a quick look at the resulting Uniprot site, to gain an overview of your found enzyme. I.e. What's its function? And from what organism (and organelle) does it originate?
     Then, navigate to the "Structure" section and from the first three hits pick the one with the highest resolution (lowest Å).
     Note down the PDB ID for the next step.
@@ -374,7 +382,9 @@ with st.expander("💡 Hint - step 2"):
 st.markdown("---")
 
 
+### Notes for us:
 
+# Step 1 NCBI Blast: The best hit should be P13129.1 (100% Coverage and 99.82% Identity)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -396,19 +406,19 @@ molecules = [
         "name": "Substrate 1",
         "file": HERE / "Homophthalic-acid.mol2",
         "label": "↓ Download substrate 1",
-        "filename": "Homophthalic-acid.mol2",
+        "filename": "Substrate1.mol2" # appears when they download it from app
     },
     {
         "name": "Substrate 2",
         "file": HERE / "2D1S_substrate.mol2",
         "label": "↓ Download substrate 2",
-        "filename": "2D1S_substrate.mol2",
+        "filename": "Substrate2.mol2",
     },
     {
         "name": "Substrate 3",
         "file": HERE / "1H-Indole-3-Proprionic_acid.mol2",
         "label": "↓ Download substrate 3",
-        "filename": "1H-Indole-3-Proprionic_acid.mol2",
+        "filename": "Substrate3.mol2",
     },
 ]
 
