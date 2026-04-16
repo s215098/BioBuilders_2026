@@ -1,0 +1,11 @@
+run,pose,affinity_kcal_mol,rmsd_lb,rmsd_ub
+8RNJ_BADGE_blind,1,-9.022,0.0,0.0
+8RNJ_BADGE_blind,2,-8.824,3.275,7.56
+8RNJ_BADGE_blind,3,-8.619,5.797,9.187
+8RNJ_BADGE_blind,4,-8.581,3.478,6.085
+8RNJ_BADGE_blind,5,-8.527,3.421,9.303
+8RNJ_BADGE_blind,6,-8.485,5.732,7.934
+8RNJ_BADGE_blind,7,-7.967,5.855,8.107
+8RNJ_BADGE_blind,8,-7.735,8.539,10.071
+8RNJ_BADGE_blind,9,-7.632,8.566,11.99
+8RNJ_BADGE_blind,10,-7.419,21.876,23.656
