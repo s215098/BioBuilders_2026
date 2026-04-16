@@ -155,7 +155,7 @@ Performs the docking simulation:
 If both scores are good, high confidence and high affinity score from boltz2 and low (negative) ΔG from Vina it is a good candidate for further analysis (simulating actual degradation).
 
 ```bash
-python boltz_affinity.py \
+python boltz_vina.py \
   -n "name_for_run" \
   -seq "sequence_of_the_enzyme" \
   -smi "smile_string_of_ligand_or_substrate" \
