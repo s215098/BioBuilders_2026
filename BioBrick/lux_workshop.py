@@ -496,6 +496,19 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# STEP 3b — If the docking server doesn't work
+# ═══════════════════════════════════════════════════════════════════════════════
+
+with st.expander("If docking server doesn't work...Shit happens"):
+
+    st.markdown("Just as the friday bar wasn't open yesterday, the docking server isn't open today...:)")
+
+    # st.markdown("Instead, you can try our docking command line tool, which has been implemented on Google Colab.")
+    st.markdown("Let Kristine know, and we'll show you together on the screen.")
+
 st.markdown("---")
 
 # ═══════════════════════════════════════════════════════════════════════════════
