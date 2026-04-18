@@ -338,8 +338,8 @@ st.markdown("""
   <div class='step-title'>Identify the mystery enzyme</div>
   <strong>1) NCBI </strong>
   <div class='step-body'>
-    Copy the sequence below and run a <strong>blastp</strong> search against
-    UniProtKB/Swiss-Prot to identify the protein, its organism, and its function.
+    Copy the sequence below and run a <strong>blastp</strong> search against the
+    "UniProtKB/Swiss-Prot" database to identify the protein, its organism, and its function.
     <a class='step-link' href="https://blast.ncbi.nlm.nih.gov/Blast.cgi?PROGRAM=blastp&PAGE_TYPE=BlastSearch" target="_blank">↗ Open NCBI blastp</a>
   </div>
   <div class='sequence-box'>>mystery_protein_iGEM2026<br>
