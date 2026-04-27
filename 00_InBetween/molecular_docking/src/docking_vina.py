@@ -13,10 +13,11 @@ def get_receptor_center_and_size(pdb_file):
     with open(pdb_file, 'r') as f:
         for line in f:
             if line.startswith("ATOM") or line.startswith("HETATM"):
-                x = float(line[30:38])
-                y = float(line[38:46])
-                z = float(line[46:54])
-                coordinates.append([x, y, z])
+                if line[16] == 'A' or line[16] == ' ' :
+                    x = float(line[30:38])
+                    y = float(line[38:46])
+                    z = float(line[46:54])
+                    coordinates.append([x, y, z])
     
     coords = np.array(coordinates)
     center = np.mean(coords, axis=0)
