@@ -1,5 +1,0 @@
-Best Docking Results (lowest affinity = strongest predicted binding)
-======================================================================
-Run                                              Best Affinity   Pose
-----------------------------------------------------------------------
-8RNJ_BADGE_blind                                      -9.022      1
