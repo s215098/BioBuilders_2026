@@ -1,0 +1,7 @@
+Date: Thu 19 Mar 2026 07:59:19 
+Ligand: 2D1S_substrate.mol2
+Method: Vina
+Target: 2D1S.pdb
+Sampling exhaustivity: 15
+Box size: 25 30 25
+Box center: 20.0 17.0 8.0
