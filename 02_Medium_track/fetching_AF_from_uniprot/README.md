@@ -1,6 +1,12 @@
 # fetch_alphafold.py
 
-A minimal command-line script to download an AlphaFold protein structure using a UniProt ID.
+Downloads AlphaFold PDB structures for a given UniProt ID, using the names listed in UniProt's structure section.
+
+## How it works
+
+1. Queries the **UniProt REST API** for the entry and finds all cross-references where `source = "AlphaFold DB"`.
+2. For each AlphaFold entry ID found, calls the **AlphaFold EBI API** to get the direct PDB download URL and the structure name (`uniprotDescription`).
+3. Downloads each PDB file, named after the structure (e.g. `Hemoglobin_subunit_beta.pdb`).
 
 ## Requirements
 
@@ -9,25 +15,34 @@ A minimal command-line script to download an AlphaFold protein structure using a
 ## Usage
 
 ```bash
-python fetch_alphafold.py <UniProtID> [pdb|cif]
+python fetch_alphafold.py <UniProtID>
 ```
-
-The format argument is optional and defaults to `pdb`.
 
 ## Examples
 
 ```bash
-# Download hemoglobin subunit beta as PDB (default)
+# Hemoglobin subunit beta — single fragment
 python fetch_alphafold.py P68871
 
-# Download as mmCIF format
-python fetch_alphafold.py P68871 cif
+# Titin — multiple fragments (F1, F2, ...)
+python fetch_alphafold.py Q8WZ42
 ```
 
-The file is saved in the current directory as `<UniProtID>.pdb` or `<UniProtID>.cif`.
+### Example output
+
+```
+Looking up AlphaFold structures for UniProt ID: P68871
+Found 1 AlphaFold entry/entries: P68871
+
+Fetching metadata for P68871 ...
+  Name   : Hemoglobin subunit beta
+  URL    : https://alphafold.ebi.ac.uk/files/AF-P68871-F1-model_v4.pdb
+  Saving : Hemoglobin subunit beta.pdb
+  Done.
+```
 
 ## Notes
 
-- Structures are fetched from the [AlphaFold EBI database](https://alphafold.ebi.ac.uk/) (model v4).
-- Not every UniProt ID has an AlphaFold entry — the script will tell you if one is not found.
-- For multi-domain proteins, AlphaFold may have multiple fragments (F1, F2, …). This script only fetches fragment 1 (F1).
+- Files are saved in the **current working directory**.
+- For large proteins with multiple fragments (e.g. Titin), all fragments are downloaded.
+- If a UniProt ID has no AlphaFold entry, the script exits with a clear message.

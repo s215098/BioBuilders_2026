@@ -1,34 +1,109 @@
 #!/usr/bin/env python3
-"""Fetch AlphaFold structure for a given UniProt ID."""
+"""
+Fetch AlphaFold PDB structures for a UniProt ID.
+
+Workflow:
+  1. Query UniProt to find all AlphaFoldDB cross-references for the entry.
+  2. For each AlphaFold entry ID, call the AlphaFold API to get the PDB URL
+     and the structure name (uniprotDescription or entryId as fallback).
+  3. Download each PDB file, named after the structure.
+"""
 
 import sys
+import json
 import urllib.request
+import urllib.error
+import re
 
-def fetch_alphafold(uniprot_id, fmt="pdb"):
-    ext = "pdb" if fmt == "pdb" else "cif"
-    url = f"https://alphafold.ebi.ac.uk/files/AF-{uniprot_id}-F1-model_v4.{ext}"
-    outfile = f"{uniprot_id}.{ext}"
 
-    print(f"Fetching {url} ...")
+UNIPROT_API   = "https://rest.uniprot.org/uniprotkb/{uid}.json"
+ALPHAFOLD_API = "https://alphafold.ebi.ac.uk/api/prediction/{entry_id}"
+
+
+def fetch_json(url):
+    req = urllib.request.Request(url, headers={"Accept": "application/json"})
+    with urllib.request.urlopen(req) as resp:
+        return json.loads(resp.read())
+
+
+def safe_filename(name):
+    """Strip characters that are invalid in filenames."""
+    return re.sub(r'[^\w\-. ]', '_', name).strip()
+
+
+def get_alphafold_entry_ids(uniprot_id):
+    """Return list of AlphaFold entry IDs from UniProt cross-references."""
+    url = UNIPROT_API.format(uid=uniprot_id)
     try:
-        urllib.request.urlretrieve(url, outfile)
-        print(f"Saved to {outfile}")
+        data = fetch_json(url)
     except urllib.error.HTTPError as e:
-        print(f"Error: {e.code} - could not fetch structure for '{uniprot_id}'")
-        print("Check that the UniProt ID is correct and has an AlphaFold entry.")
+        print(f"Error fetching UniProt entry '{uniprot_id}': HTTP {e.code}")
         sys.exit(1)
 
-if __name__ == "__main__":
+    refs = data.get("uniProtKBCrossReferences", [])
+    af_ids = [r["id"] for r in refs if r.get("database") == "AlphaFoldDB"]
+
+    if not af_ids:
+        print(f"No AlphaFoldDB entries found for '{uniprot_id}' in UniProt.")
+        sys.exit(0)
+
+    return af_ids
+
+
+def get_alphafold_metadata(entry_id):
+    """Return (pdb_url, name) from the AlphaFold API for a given entry ID."""
+    url = ALPHAFOLD_API.format(entry_id=entry_id)
+    try:
+        results = fetch_json(url)
+    except urllib.error.HTTPError as e:
+        print(f"  Warning: could not fetch AlphaFold metadata for '{entry_id}': HTTP {e.code}")
+        return None, None
+
+    if not results:
+        print(f"  Warning: empty response from AlphaFold API for '{entry_id}'")
+        return None, None
+
+    entry = results[0]
+    pdb_url = entry.get("pdbUrl")
+    name = entry.get("uniprotDescription") or entry.get("entryId") or entry_id
+    return pdb_url, name
+
+
+def download_file(url, dest_path):
+    urllib.request.urlretrieve(url, dest_path)
+
+
+def main():
     if len(sys.argv) < 2:
-        print("Usage: python fetch_alphafold.py <UniProtID> [pdb|cif]")
+        print("Usage: python fetch_alphafold.py <UniProtID>")
         print("Example: python fetch_alphafold.py P68871")
         sys.exit(1)
 
     uniprot_id = sys.argv[1].strip().upper()
-    fmt = sys.argv[2].lower() if len(sys.argv) > 2 else "pdb"
 
-    if fmt not in ("pdb", "cif"):
-        print("Format must be 'pdb' or 'cif'")
-        sys.exit(1)
+    print(f"Looking up AlphaFold structures for UniProt ID: {uniprot_id}")
+    af_ids = get_alphafold_entry_ids(uniprot_id)
+    print(f"Found {len(af_ids)} AlphaFold entry/entries: {', '.join(af_ids)}\n")
 
-    fetch_alphafold(uniprot_id, fmt)
+    for entry_id in af_ids:
+        print(f"Fetching metadata for {entry_id} ...")
+        pdb_url, name = get_alphafold_metadata(entry_id)
+
+        if not pdb_url:
+            print(f"  Skipping {entry_id} (no PDB URL available).\n")
+            continue
+
+        filename = safe_filename(name) + ".pdb"
+        print(f"  Name   : {name}")
+        print(f"  URL    : {pdb_url}")
+        print(f"  Saving : {filename}")
+
+        try:
+            download_file(pdb_url, filename)
+            print(f"  Done.\n")
+        except urllib.error.HTTPError as e:
+            print(f"  Error downloading: HTTP {e.code}\n")
+
+
+if __name__ == "__main__":
+    main()
