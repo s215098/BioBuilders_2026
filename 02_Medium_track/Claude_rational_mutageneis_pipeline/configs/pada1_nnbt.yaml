@@ -1,0 +1,84 @@
+# ============================================================
+# PaDa-I × NNBT  —  Pipeline config
+# ============================================================
+# Copy this file and edit it to set up a new enzyme/substrate pair.
+# All fields marked REQUIRED must be present.
+# Fields marked OPTIONAL can be removed if not applicable.
+# ============================================================
+
+# ── Enzyme ───────────────────────────────────────────────────
+enzyme:
+  name: PaDa-I                    # REQUIRED — used in log messages and output filenames
+
+  # REQUIRED — mature protein sequence (no signal peptide), single-letter, no spaces.
+  # Boltz-2 numbers from position 1, so verify that the residue numbers in your
+  # literature match this sequence (check a known hotspot like A316).
+  sequence: >-
+    EPGLPPGPLENSSAKLVNDEAHPWKPLRPGDIRGPCPGLNTLASHGYLPRNGVATPAQIINAVQEGFNFDNQAAIFATYAA
+    HLVDGNLITDLLSIGRKTRLTGPDPPPPASVGGLNEHGTFEGDASMTRGDAFFGNNHDFNETLFEQLVDYSNRFGGGKYNL
+    TVAGELRFKRIQDSIATNPNFSFVDFRFFTAYGETTFPANLFVDGRRDDGQLDMDAARSFFQFSRMPDDFFRAPSPRSGTG
+    VEVVVQAHPMQPGRNVGKINSYTVDPTSSDFSTPCLMYEKFVNITVKSLYPNPTVQLRKALNTNLDFLFQGVAAGCTQVFP
+    YGRD
+
+  # REQUIRED — positions that must never be mutated (1-indexed, matching the sequence above).
+  # Include catalytic residues, metal ligands, disulfide cysteines, etc.
+  protected_residues: [36, 189, 196]   # C36 (heme axial ligand), R189/E196 (catalytic pair)
+
+
+# ── Substrate ────────────────────────────────────────────────
+substrate:
+  name: NNBT                      # REQUIRED
+  smiles: "CC1=CC=C(C=C1)N(CC(C)O)CC(C)O"   # REQUIRED — N,N-Bis(2-hydroxypropyl)-p-toluidine
+
+
+# ── Pocket constraints ───────────────────────────────────────
+# OPTIONAL — residue numbers (1-indexed) that define the binding pocket.
+# Boltz-2 uses these to bias co-folding toward the active site.
+# Remove or leave empty to let Boltz-2 predict binding freely.
+pocket_residues: [69, 121, 199, 76, 191, 316]
+
+
+# ── Cofactor ─────────────────────────────────────────────────
+# OPTIONAL — remove this entire block for cofactor-free enzymes.
+# Use 'ccd' for standard cofactors (CCD code from the PDB Chemical Component Dictionary).
+# Use 'smiles' if your cofactor is non-standard.
+cofactor:
+  chain_id: C
+  ccd: HEM      # heme b (iron protoporphyrin IX)
+  # smiles: "..."   # alternative: provide SMILES instead of ccd
+
+
+# ── Claude context ───────────────────────────────────────────
+# OPTIONAL — required only when Claude CLI is available and you want AI rationale.
+# Describe the reaction mechanism, key residues, and what "better" means for this system.
+# Claude reads this before proposing mutations. Be specific — vague context gives vague proposals.
+context: |
+  Target reaction: N-dealkylation of NNBT (N,N-Bis(2-hydroxypropyl)-p-toluidine)
+  Products: secondary aromatic amine + lactaldehyde (detected by Purpald assay at 530 nm)
+  Baseline: PaDa-I achieves ~12% conversion (Linde et al. 2022, doi:10.3389/fctls.2022.883263).
+  The campaign goal is to improve N-dealkylation efficiency.
+
+  Catalytic mechanism:
+    UPO Compound I (Fe(IV)=O) abstracts a hydrogen atom from the α-carbon of one
+    hydroxypropyl chain: N–CH2–CH(OH)–CH3. The α-carbon radical undergoes C–N bond
+    homolysis, releasing lactaldehyde and leaving the secondary amine.
+    CRITICAL GEOMETRY: the α-carbon (–CH2– directly bonded to N) must be ~3.5–4 Å
+    from the ferryl iron (Fe=O). If the nitrogen faces Fe instead, N-oxidation
+    competes with N-dealkylation — this is a non-productive binding mode.
+
+  Key residues (Ramirez-Escudero 2018, PDB 6EKZ):
+  - F69, F121, F199: Phe triad — π-stacking with the para-tolyl ring anchors the
+                     substrate. Controls whether α-C or N faces Fe=O.
+  - F76, F191: Entrance gate — the tolyl ring (~7 Å wide) must pass these to enter.
+  - A316: Loop hotspot (G314–G318). A316P (JEd-I variant) gave 1.5–6× improvement
+          in kcat/Km. Controls how deep bulky substrates penetrate the channel.
+  - A73, T192: Polar contacts — H-bond to hydroxypropyl –OH groups, locking the pose.
+  - V244, F274, P277: Outer entrance hydrophobics.
+  - C36: Axial heme ligand — NEVER mutate.
+  - R189, E196: Catalytic acid-base pair — NEVER mutate.
+
+  Substrate geometry:
+  - Tolyl ring (~7 Å wide, planar) anchors via π-stacking with Phe triad.
+  - Tertiary amine N sits between tolyl ring and two hydroxypropyl chains.
+  - Para-methyl of tolyl ring points toward channel entrance.
+  - The heme channel is ~17 Å deep, hydrophobic, cone-shaped.

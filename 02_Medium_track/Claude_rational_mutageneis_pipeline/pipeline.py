@@ -1,16 +1,13 @@
 #!/usr/bin/env python3
 """
-UPO PaDa-I × NNBT  —  AI-Rational Iterative Pipeline
-======================================================
-Stack: Boltz-2 (co-folding + affinity) + Claude Code CLI (reasoning)
+Enzyme × Substrate  —  AI-Rational Iterative Mutation Pipeline
+===============================================================
+Stack: Boltz-2 (co-folding + affinity) + Claude Code CLI (optional reasoning)
 
-Substrate: N,N-Bis(2-hydroxypropyl)-p-toluidine (NNBT)
-
-Each round:
-  1. Write YAML  →  boltz predict  →  parse affinity + structure
-  2. Extract contact residues from predicted CIF
-  3. Send full context to Claude → get structured mutation rationale
-  4. Apply best mutation to sequence string  →  next round
+Each round (scan mode):
+  1. Write YAML  →  boltz predict  →  parse affinity + contacts from CIF
+  2. Accept or roll back mutation based on Δaffinity threshold
+  3. If Claude CLI is available: add structural rationale to step report
 
 No GNINA. No FoldX. No PDB manipulation.
 Mutations are pure Python string operations on the protein sequence.
@@ -19,23 +16,20 @@ Install
 -------
     pip install boltz biopython requests pyyaml pandas numpy
 
-Download Boltz-2 weights (first run auto-downloads, or:)
-    boltz predict --help
-
 Usage
 -----
-    python pipeline.py --rounds 4 --workdir results/
+    python pipeline.py --config configs/pada1_nnbt.yaml \\
+        --scan_mutations A316P,F191L,A73T \\
+        --workdir results/
 
-    # with pocket constraints (recommended):
-    python pipeline.py --rounds 4 \
-        --pocket_residues 69,121,199,76,191,316
+See configs/pada1_nnbt.yaml for a fully documented example config.
 """
 
 import argparse
 import json
 import logging
-import os
 import re
+import shutil
 import subprocess
 import sys
 import time
@@ -55,133 +49,60 @@ logging.basicConfig(
 log = logging.getLogger(__name__)
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Constants
+# Chain IDs (Boltz-2 convention)
 # ─────────────────────────────────────────────────────────────────────────────
 
 PROTEIN_CHAIN = "A"
-LIGAND_CHAIN = "B"
-HEME_CHAIN = "C"
+LIGAND_CHAIN  = "B"
 BOLTZ_RESULTS_PREFIX = "boltz_results_"
 
-# PaDa-I mature sequence (post signal peptide, from 5OXU / Püllmann et al.)
-# Starts with Ala (AGCA Golden Gate overhang convention)
-# REPLACE with the verified sequence from your Excel supplementary file
-PADA1_SEQUENCE = (
-    "EPGLPPGPLENSSAKLVNDEAHPWKPLRPGDIRGPCPGLNTLASHGYLPRNGVATPAQIINAVQEGFNFDNQAAIFATYAA"
-    "HLVDGNLITDLLSIGRKTRLTGPDPPPPASVGGLNEHGTFEGDASMTRGDAFFGNNHDFNETLFEQLVDYSNRFGGGKYNL"
-    "TVAGELRFKRIQDSIATNPNFSFVDFRFFTAYGETTFPANLFVDGRRDDGQLDMDAARSFFQFSRMPDDFFRAPSPRSGTG"
-    "VEVVVQAHPMQPGRNVGKINSYTVDPTSSDFSTPCLMYEKFVNITVKSLYPNPTVQLRKALNTNLDFLFQGVAAGCTQVFP"
-    "YGRD"
-)
 
-NNBT_SMILES = "CC1=CC=C(C=C1)N(CC(C)O)CC(C)O"  # N,N-Bis(2-hydroxypropyl)-p-toluidine
+# ─────────────────────────────────────────────────────────────────────────────
+# Config
+# ─────────────────────────────────────────────────────────────────────────────
 
-# Residues that must never be mutated (catalytic essentials from the paper)
-PROTECTED_RESIDUES = {36, 189, 196}   # Cys36, Arg189, Glu196
+@dataclass
+class CofactorConfig:
+    chain_id: str
+    ccd: Optional[str] = None    # CCD code e.g. "HEM"
+    smiles: Optional[str] = None # SMILES string (used if ccd is absent)
 
-# Known hotspots from Ramirez-Escudero et al. 2018, updated for N-dealkylation of NNBT
-# Reaction target: N-dealkylation of N,N-Bis(2-hydroxypropyl)-p-toluidine
-# Products: secondary aromatic amine (p-tolyl-NH-CH2CHOHCH3) + lactaldehyde (CH3CHOHCHO)
-# Demonstrated by Linde et al. 2022 (doi:10.3389/fctls.2022.883263): PaDa-I gives 12% conversion
-# Mechanism: UPO Compound I abstracts the α-C–H from –CH2–CH(OH)–CH3, then C–N bond collapses
-HOTSPOT_CONTEXT = """
-Target reaction: N-dealkylation of NNBT (N,N-Bis(2-hydroxypropyl)-p-toluidine)
-Products: secondary aromatic amine + lactaldehyde (detected by Purpald assay at 530 nm)
-Baseline: PaDa-I achieves only 12% conversion — the campaign goal is to improve this.
 
-Catalytic mechanism (critical for geometry reasoning):
-  UPO Compound I (Fe(IV)=O, porphyrin π-cation radical) abstracts a hydrogen atom
-  from the α-carbon of one hydroxypropyl chain: N–CH2–CH(OH)–CH3.
-  The α-carbon radical then undergoes C–N bond homolysis, releasing the alkyl fragment
-  as lactaldehyde and leaving the secondary amine on the toluidine nitrogen.
-  THEREFORE: the α-carbon (the –CH2– directly bonded to N) must be positioned
-  ~3.5–4 Å from the ferryl oxygen (Fe=O), NOT the nitrogen atom itself.
-  If the nitrogen faces the iron instead, N-oxidation competes with or replaces
-  N-dealkylation — this is a WRONG binding mode for our target reaction.
+@dataclass
+class PipelineConfig:
+    enzyme_name: str
+    sequence: str
+    protected_residues: set
+    substrate_name: str
+    substrate_smiles: str
+    pocket_residues: list
+    cofactor: Optional[CofactorConfig]
+    context: Optional[str]       # free-text reaction/residue context fed to Claude
 
-Key structural residues from the crystal structure analysis (5OXU, PaDa-I):
-- F69, F121, F199: Phe triad — the para-tolyl ring of NNBT engages in π–π or
-                   T-stacking with these residues. This positions the molecule
-                   deep in the channel. Mutations here tune ring depth and tilt,
-                   which directly controls whether the α-C or the N faces Fe=O.
-                   Prefer aromatic-preserving substitutions (F→Y, F→W) or
-                   geometry-adjusting reductions (F→L) over full removal.
-- F76, F191: Channel entrance "molecular hinge". The para-tolyl ring (~7 Å wide)
-             must pass these residues to enter. L311 (see below) already widened
-             this gap to 7.8 Å. Monitor entrance width in predictions — if the
-             tolyl ring is blocked at the entrance the binding pose will be wrong.
-- E196, R189: Catalytic acid-base pair — NEVER mutate these.
-- C36: Axial heme ligand (5th coordination) — NEVER mutate.
-- A316: Hotspot in flexible loop G314-G318. A316P (JEd-I) gave 1.5-6x improvement
-        in kcat/Km for all substrates. Loop flexibility controls how deep bulky
-        aromatics penetrate — high-priority candidate for early rounds.
-- V244, F274, P277: Outer entrance hydrophobics — tolyl ring contacts these during
-                    entry. Smaller residues here ease passage without disrupting
-                    the deep-channel geometry.
-- A73, T192: Polar residues flanking the channel. The –OH of the hydroxypropyl
-             chain can H-bond here. Productive geometry has one –OH pointing toward
-             T192 or A73 while the α-C faces Fe=O. If both –OH groups are buried
-             in the hydrophobic core, the binding mode is likely unproductive.
-- L311 (was F311): F311L widened the entrance from 4.1 → 7.8 Å — essential for
-                   accommodating the tolyl ring. Treat as a baseline reference;
-                   if predictions show a narrow entrance, suggest this mutation first.
 
-Substrate geometry (NNBT = N,N-Bis(2-hydroxypropyl)-p-toluidine):
-- Tolyl ring (~7 Å wide, planar, rigid) anchors in the Phe triad via π-stacking.
-- Tertiary amine N sits between the tolyl ring and the two hydroxypropyl chains.
-- Two identical –CH2–CH(OH)–CH3 chains extend from N. Either can be dealkylated.
-- The α-C (–CH2–) of the reacting chain must be ~3.5–4 Å from Fe=O.
-- The para-methyl group of the tolyl ring points toward the channel entrance.
-  A shallow hydrophobic pocket for this methyl (e.g. via A316V) improves anchoring.
+def load_config(path: Path) -> PipelineConfig:
+    with open(path) as f:
+        data = yaml.safe_load(f)
 
-The heme channel is 17 Å deep, hydrophobic, cone-shaped (frustum geometry).
-"""
+    cofactor = None
+    if "cofactor" in data and data["cofactor"]:
+        c = data["cofactor"]
+        cofactor = CofactorConfig(
+            chain_id=c["chain_id"],
+            ccd=c.get("ccd"),
+            smiles=c.get("smiles"),
+        )
 
-SYSTEM_PROMPT = f"""You are an expert computational enzymologist specialising in 
-fungal peroxygenases (UPOs), specifically the laboratory-evolved AaeUPO variant 
-PaDa-I. You are directing an in silico directed evolution campaign to improve
-binding and catalytic activity toward the substrate NNBT
-(N,N-Bis(2-hydroxypropyl)-p-toluidine).
-
-{HOTSPOT_CONTEXT}
-
-Your role is to analyse docking/co-folding results from Boltz-2 and propose 
-the single most rational point mutation for the next round. You must reason 
-from first principles: consider steric effects, hydrophobicity, hydrogen bonding, 
-channel geometry, and the known structural biology of this enzyme.
-
-RULES:
-- Never propose mutations at positions 36, 189, or 196 (catalytic essentials)
-- Prefer conservative substitutions unless there is strong structural justification
-- Always explain WHY the mutation should improve N-dealkylation of NNBT specifically
-- Be concrete: cite specific interactions, distances, or structural features
-- The α-carbon (–CH2– directly bonded to N) must face Fe=O at ~3.5–4 Å for
-  productive N-dealkylation. This is the single most important geometry check.
-  If the N or the tolyl ring faces the iron instead, the binding mode is wrong
-  regardless of affinity score — prioritise fixing geometry over improving affinity
-- If the channel entrance is too narrow for the para-tolyl ring, propose widening
-  mutations first (F76, F191, building on L311) before optimising deep contacts
-- If geometry is correct and affinity is good, suggest mutations that better anchor
-  the hydroxypropyl –OH groups via H-bonding (T192, A73) to lock the productive pose
-- Never optimise for N-oxidation — the target product is lactaldehyde via C–N cleavage
-
-Respond ONLY with valid JSON matching this schema:
-{{
-  "reasoning": "detailed structural reasoning (3-5 sentences)",
-  "proposed_mutation": {{
-    "position": <int>,        
-    "from_aa": "<single letter>",
-    "to_aa": "<single letter>",
-    "mutation_string": "<e.g. A316P>"
-  }},
-  "expected_effect": "what structural/functional change is expected",
-  "confidence": "high|medium|low",
-  "alternative_mutations": [
-    {{"mutation_string": "X000Y", "rationale": "brief reason"}},
-    {{"mutation_string": "X000Y", "rationale": "brief reason"}}
-  ],
-  "warning": "any concern about this mutation or null"
-}}"""
+    return PipelineConfig(
+        enzyme_name=data["enzyme"]["name"],
+        sequence=data["enzyme"]["sequence"],
+        protected_residues=set(data["enzyme"].get("protected_residues", [])),
+        substrate_name=data["substrate"]["name"],
+        substrate_smiles=data["substrate"]["smiles"],
+        pocket_residues=data.get("pocket_residues", []),
+        cofactor=cofactor,
+        context=data.get("context"),
+    )
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -190,20 +111,20 @@ Respond ONLY with valid JSON matching this schema:
 
 @dataclass
 class BoltzResult:
-    affinity_pred_value: float      # log10(IC50 in µM) — lower = better binder
-    affinity_probability: float     # 0-1, probability of being a binder
-    confidence_score: float         # pLDDT-like overall confidence
+    affinity_pred_value: float   # log10(IC50 in µM) — lower = better binder
+    affinity_probability: float  # 0-1, probability of being a binder
+    confidence_score: float      # pLDDT-like overall confidence
     structure_cif: Path
-    contacts: list[str] = field(default_factory=list)
+    contacts: list = field(default_factory=list)
 
 
 @dataclass
 class ClaudeRationale:
     reasoning: str
-    proposed_mutation: dict         # {position, from_aa, to_aa, mutation_string}
+    proposed_mutation: dict      # {position, from_aa, to_aa, mutation_string}
     expected_effect: str
     confidence: str
-    alternatives: list[dict]
+    alternatives: list
     warning: Optional[str]
     raw_response: str
 
@@ -212,9 +133,9 @@ class ClaudeRationale:
 class RoundSummary:
     round_num: int
     sequence: str
-    mutations_so_far: list[str]
+    mutations_so_far: list
     boltz_result: BoltzResult
-    claude_rationale: ClaudeRationale
+    claude_rationale: Optional[ClaudeRationale]
     mutation_applied: Optional[str]
 
 
@@ -224,64 +145,63 @@ class RoundSummary:
 
 class BoltzRunner:
 
-    def __init__(self, workdir: Path, pocket_residues: list[int] = None, template: Path = None):
+    def __init__(self, config: PipelineConfig, workdir: Path, template: Path = None):
+        self.config = config
         self.workdir = workdir
-        self.pocket_residues = pocket_residues or [69, 121, 199, 76, 191]
         self.template = template
 
-    def write_yaml(
-        self,
-        sequence: str,
-        round_num,
-        label: str = "",
-    ) -> Path:
-        """Write Boltz-2 YAML input for protein + NNBT with affinity prediction."""
+    def write_yaml(self, sequence: str, round_num, label: str = "") -> Path:
+        """Write Boltz-2 YAML input for protein + substrate (+ optional cofactor)."""
 
-        # Pocket constraints — bias co-folding toward heme channel
         constraints = []
-        if self.pocket_residues:
+        if self.config.pocket_residues:
             constraints.append({
                 "pocket": {
                     "binder": LIGAND_CHAIN,
                     "contacts": [
                         [PROTEIN_CHAIN, r]
-                        for r in self.pocket_residues
+                        for r in self.config.pocket_residues
                     ]
                 }
             })
 
-        config = {
-            "version": 1,
-            "sequences": [
-                {
-                    "protein": {
-                        "id": PROTEIN_CHAIN,
-                        "sequence": sequence,
-                    }
-                },
-                {
-                    "ligand": {
-                        "id": LIGAND_CHAIN,
-                        "smiles": NNBT_SMILES,
-                    }
-                },
-                {
-                    "ligand": {
-                        "id": HEME_CHAIN,
-                        "ccd": "HEM",
-                    }
+        sequences = [
+            {
+                "protein": {
+                    "id": PROTEIN_CHAIN,
+                    "sequence": sequence,
                 }
-            ],
+            },
+            {
+                "ligand": {
+                    "id": LIGAND_CHAIN,
+                    "smiles": self.config.substrate_smiles,
+                }
+            },
+        ]
+
+        if self.config.cofactor:
+            cof = self.config.cofactor
+            entry: dict = {"id": cof.chain_id}
+            if cof.ccd:
+                entry["ccd"] = cof.ccd
+            elif cof.smiles:
+                entry["smiles"] = cof.smiles
+            sequences.append({"ligand": entry})
+
+        boltz_config = {
+            "version": 1,
+            "sequences": sequences,
             "properties": [
                 {"affinity": {"binder": LIGAND_CHAIN}}
             ],
         }
 
         if constraints:
-            config["constraints"] = constraints
+            boltz_config["constraints"] = constraints
 
         if self.template:
-            config["templates"] = [
+            boltz_config["templates"] = [
                 {
                     "cif": str(self.template),
                     "chain_id": PROTEIN_CHAIN,
@@ -293,20 +213,19 @@ class BoltzRunner:
         slug = f"round{round_num}" + (f"_{label}" if label else "")
         yaml_path = self.workdir / f"{slug}.yaml"
         with open(yaml_path, "w") as f:
-            yaml.dump(config, f, default_flow_style=False)
+            yaml.dump(boltz_config, f, default_flow_style=False)
         log.info(f"  Wrote Boltz YAML → {yaml_path}")
         return yaml_path
 
     def run(self, yaml_path: Path, round_num, label: str = "") -> BoltzResult:
-        """Run boltz predict and parse outputs."""
         out_dir = self.workdir / "boltz_out"
         slug = f"round{round_num}" + (f"_{label}" if label else "")
 
         cmd = [
             "boltz", "predict", str(yaml_path),
             "--out_dir", str(out_dir),
-            "--use_msa_server",          # auto-generate MSA via mmseqs2 server
-            "--diffusion_samples", "5",  # 5 structural samples, take best
+            "--use_msa_server",
+            "--diffusion_samples", "5",
         ]
 
         log.info(f"Running Boltz-2 ({slug})...")
@@ -319,7 +238,6 @@ class BoltzRunner:
         return self._parse_output(out_dir, yaml_path.stem)
 
     def _parse_output(self, out_dir: Path, stem: str) -> BoltzResult:
-        """Parse affinity JSON and confidence from Boltz-2 output directory."""
         pred_dir = out_dir / f"{BOLTZ_RESULTS_PREFIX}{stem}" / "predictions" / stem
 
         all_files = sorted(pred_dir.glob("*"))
@@ -334,7 +252,6 @@ class BoltzRunner:
         if affinity_files:
             with open(affinity_files[0]) as f:
                 aff = json.load(f)
-            # Take best sample (lowest affinity_pred_value)
             samples = aff if isinstance(aff, list) else [aff]
             best = min(samples, key=lambda x: x.get("affinity_pred_value", 999))
             affinity_pred = best.get("affinity_pred_value", 999.0)
@@ -355,7 +272,6 @@ class BoltzRunner:
             f"confidence = {confidence:.3f}"
         )
 
-        # Extract contacts from CIF
         contacts = self._extract_contacts_from_cif(best_cif)
 
         return BoltzResult(
@@ -367,11 +283,8 @@ class BoltzRunner:
         )
 
     @staticmethod
-    def _extract_contacts_from_cif(cif_path: Path, cutoff: float = 4.5) -> list[str]:
-        """
-        Parse mmCIF and find protein residues within cutoff Å of ligand (chain B).
-        Returns list like ['F69', 'A316', 'F121']
-        """
+    def _extract_contacts_from_cif(cif_path: Path, cutoff: float = 4.5) -> list:
+        """Find protein residues within cutoff Å of ligand (chain B)."""
         try:
             from Bio.PDB import MMCIFParser
             parser = MMCIFParser(QUIET=True)
@@ -423,50 +336,96 @@ class BoltzRunner:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Claude reasoning engine
+# Claude reasoning engine (optional)
 # ─────────────────────────────────────────────────────────────────────────────
 
 class ClaudeReasoner:
 
-    def __init__(self):
-        pass
+    def __init__(self, config: PipelineConfig):
+        self.config = config
+        self._available: Optional[bool] = None
+
+    def is_available(self) -> bool:
+        if self._available is None:
+            self._available = shutil.which("claude") is not None
+        return self._available
+
+    def _build_system_prompt(self) -> str:
+        return (
+            f"You are an expert computational enzymologist helping engineer "
+            f"{self.config.enzyme_name} to improve activity toward "
+            f"{self.config.substrate_name}.\n\n"
+            f"{self.config.context}\n\n"
+            f"Your role is to analyse Boltz-2 co-folding results and propose "
+            f"the single most rational point mutation for the next round. "
+            f"Reason from first principles: steric effects, hydrophobicity, "
+            f"hydrogen bonding, channel geometry, and known structural biology.\n\n"
+            f"RULES:\n"
+            f"- Never propose mutations at protected positions: "
+            f"{sorted(self.config.protected_residues)}\n"
+            f"- Prefer conservative substitutions unless there is strong justification\n"
+            f"- Always explain WHY the mutation improves activity toward "
+            f"{self.config.substrate_name} specifically\n"
+            f"- Be concrete: cite specific interactions, distances, or structural features\n\n"
+            f"Respond ONLY with valid JSON matching this schema:\n"
+            '{{\n'
+            '  "reasoning": "detailed structural reasoning (3-5 sentences)",\n'
+            '  "proposed_mutation": {{\n'
+            '    "position": <int>,\n'
+            '    "from_aa": "<single letter>",\n'
+            '    "to_aa": "<single letter>",\n'
+            '    "mutation_string": "<e.g. A316P>"\n'
+            '  }},\n'
+            '  "expected_effect": "what structural/functional change is expected",\n'
+            '  "confidence": "high|medium|low",\n'
+            '  "alternative_mutations": [\n'
+            '    {{"mutation_string": "X000Y", "rationale": "brief reason"}}\n'
+            '  ],\n'
+            '  "warning": "any concern about this mutation or null"\n'
+            '}}'
+        )
 
     def reason(
         self,
         round_num: int,
         sequence: str,
-        mutations_so_far: list[str],
+        mutations_so_far: list,
         boltz_result: BoltzResult,
         history: list,
-    ) -> ClaudeRationale:
+    ) -> Optional[ClaudeRationale]:
         """
-        Send round context to Claude Code CLI and get structured mutation proposal.
-        Full context is included in each call so no API key is required.
+        Ask Claude for a mutation proposal. Returns None if Claude is not
+        available or if the call fails — callers must handle None.
         """
+        if not self.is_available():
+            log.info("  Claude CLI not found — skipping rationale")
+            return None
+
+        if not self.config.context:
+            log.warning(
+                "  Claude is available but 'context' is not set in config — "
+                "skipping rationale. Add a 'context' field to your config YAML."
+            )
+            return None
 
         prev_context = ""
         if history:
             prev_context = "\n\nPrevious rounds trajectory:\n"
             prev_aff = None
             for s in history:
-                mut = s.claude_rationale.proposed_mutation.get("mutation_string", "none")
+                if s.claude_rationale:
+                    mut = s.claude_rationale.proposed_mutation.get("mutation_string", "none")
+                    effect = s.claude_rationale.expected_effect
+                    outcome_conf = s.claude_rationale.confidence
+                else:
+                    mut = "none"
+                    effect = ""
+                    outcome_conf = "n/a"
                 aff = s.boltz_result.affinity_pred_value
                 prob = s.boltz_result.affinity_probability
                 contacts = ", ".join(s.boltz_result.contacts) if s.boltz_result.contacts else "unknown"
-                effect = s.claude_rationale.expected_effect
-
-                if prev_aff is None:
-                    delta_str = ""
-                else:
-                    delta = aff - prev_aff
-                    delta_str = f" (Δ{delta:+.4f})"
-
-                if s.mutation_applied:
-                    outcome = f"accepted"
-                else:
-                    conf = s.claude_rationale.confidence
-                    outcome = f"rejected, {conf} confidence"
-
+                delta_str = f" (Δ{aff - prev_aff:+.4f})" if prev_aff is not None else ""
+                outcome = "accepted" if s.mutation_applied else f"rejected, {outcome_conf} confidence"
                 prev_context += (
                     f"  Round {s.round_num}: {mut} — {effect}\n"
                     f"    affinity {aff:.4f}{delta_str}, binder_prob {prob:.3f}, {outcome}\n"
@@ -474,73 +433,59 @@ class ClaudeReasoner:
                 )
                 prev_aff = aff
 
-        user_message = f"""
-ROUND {round_num} RESULTS
-{'='*50}
+        enzyme_label = self.config.enzyme_name
+        if mutations_so_far:
+            enzyme_label += "+" + "+".join(mutations_so_far)
 
-Current sequence mutations applied so far: {mutations_so_far if mutations_so_far else 'none (wildtype PaDa-I)'}
-
-Boltz-2 co-folding results for PaDa-I{'+'.join(mutations_so_far) if mutations_so_far else ''} + NNBT:
-  affinity_pred_value : {boltz_result.affinity_pred_value:.4f}  (log10 IC50 µM — lower = tighter binding)
-  binder_probability  : {boltz_result.affinity_probability:.4f}  (0→1, probability of being a binder)
-  structural confidence: {boltz_result.confidence_score:.4f}
-
-Contact residues within 4.5 Å of NNBT in predicted complex:
-  {boltz_result.contacts if boltz_result.contacts else 'extraction failed — reason from known structure'}
-{prev_context}
-
-Current sequence (full, for position reference):
-{sequence}
-
-Based on these results, analyse:
-1. CRITICAL GEOMETRY: Is the α-carbon (–CH2– directly bonded to N) positioned
-   ~3.5–4 Å from the heme ferryl oxygen (Fe=O)? If the nitrogen or tolyl ring faces
-   the iron instead, state this explicitly — it means the binding mode favours
-   N-oxidation over N-dealkylation and must be corrected before anything else.
-2. Is the para-tolyl ring engaged in π-stacking with F69/F121/F199, or is the
-   channel entrance too narrow and blocking productive insertion?
-3. Are the hydroxypropyl –OH groups pointing toward T192/A73 (productive, anchors
-   the pose) or buried in the hydrophobic core (unproductive, molecule will slide)?
-4. What single point mutation would most improve N-dealkylation efficiency — either
-   by correcting α-C geometry, widening the entrance, or locking the productive pose?
-5. Are there any red flags (wrong regiochemistry, steric clashes, channel too narrow)?
-
-Propose the next mutation as JSON.
-"""
-
-        full_prompt = f"{SYSTEM_PROMPT}\n\n{user_message}"
-
-        log.info(f"  Querying Claude Code CLI for mutation rationale (round {round_num})...")
-
-        result = subprocess.run(
-            ["claude", "-p", "--no-session-persistence"],
-            input=full_prompt,
-            capture_output=True,
-            text=True,
-            timeout=180,
+        user_message = (
+            f"ROUND {round_num} RESULTS\n"
+            f"{'='*50}\n\n"
+            f"Current mutations applied so far: {mutations_so_far or 'none (wildtype)'}\n\n"
+            f"Boltz-2 co-folding results for {enzyme_label} + {self.config.substrate_name}:\n"
+            f"  affinity_pred_value : {boltz_result.affinity_pred_value:.4f}  (log10 IC50 µM — lower = tighter)\n"
+            f"  binder_probability  : {boltz_result.affinity_probability:.4f}  (0→1)\n"
+            f"  structural confidence: {boltz_result.confidence_score:.4f}\n\n"
+            f"Contact residues within 4.5 Å of {self.config.substrate_name}:\n"
+            f"  {boltz_result.contacts or 'extraction failed'}\n"
+            f"{prev_context}\n\n"
+            f"Current sequence:\n{sequence}\n\n"
+            f"Propose the next single point mutation as JSON."
         )
 
-        if result.returncode != 0:
-            raise RuntimeError(
-                f"Claude CLI failed (exit {result.returncode}): {result.stderr[-1000:]}"
+        full_prompt = self._build_system_prompt() + "\n\n" + user_message
+
+        log.info(f"  Querying Claude for mutation rationale (round {round_num})...")
+        try:
+            result = subprocess.run(
+                ["claude", "-p", "--no-session-persistence"],
+                input=full_prompt,
+                capture_output=True,
+                text=True,
+                timeout=180,
             )
+            if result.returncode != 0:
+                log.warning(f"  Claude exited {result.returncode}: {result.stderr[-500:]}")
+                return None
+        except Exception as e:
+            log.warning(f"  Claude call failed: {e}")
+            return None
 
         raw = result.stdout.strip()
         log.info(f"  Claude response received ({len(raw)} chars)")
-
         return self._parse_rationale(raw)
 
     @staticmethod
-    def _parse_rationale(raw: str) -> ClaudeRationale:
-        """Extract JSON from Claude response."""
-        # Strip markdown fences if present
+    def _parse_rationale(raw: str) -> Optional[ClaudeRationale]:
         clean = re.sub(r"```json\s*|\s*```", "", raw).strip()
-        # Find the JSON object
         match = re.search(r"\{.*\}", clean, re.DOTALL)
         if not match:
-            raise ValueError(f"No JSON found in Claude response:\n{raw}")
-
-        data = json.loads(match.group())
+            log.warning(f"No JSON found in Claude response")
+            return None
+        try:
+            data = json.loads(match.group())
+        except json.JSONDecodeError as e:
+            log.warning(f"Could not parse Claude JSON: {e}")
+            return None
 
         return ClaudeRationale(
             reasoning=data.get("reasoning", ""),
@@ -554,48 +499,44 @@ Propose the next mutation as JSON.
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Sequence mutation (pure string operation — no FoldX needed)
+# Sequence mutation (pure string operation)
 # ─────────────────────────────────────────────────────────────────────────────
 
 class SequenceMutator:
 
     @staticmethod
     def apply(sequence: str, position: int, to_aa: str) -> str:
-        """
-        Apply point mutation at 1-indexed position.
-        Boltz-2 numbers from 1 so we keep 1-based indexing throughout.
-        """
-        idx = position - 1   # convert to 0-based for Python string
+        """Apply point mutation at 1-indexed position."""
+        idx = position - 1
         if idx < 0 or idx >= len(sequence):
             raise ValueError(f"Position {position} out of range (sequence length {len(sequence)})")
         original = sequence[idx]
         mutated = sequence[:idx] + to_aa + sequence[idx+1:]
-        log.info(f"  Mutation: {original}{position}{to_aa} applied to sequence")
+        log.info(f"  Mutation: {original}{position}{to_aa} applied")
         return mutated
 
     @staticmethod
     def validate(sequence: str, position: int, from_aa: str) -> bool:
-        """Check that the position actually contains the expected amino acid."""
         idx = position - 1
         actual = sequence[idx]
         if actual != from_aa:
             log.warning(
-                f"Position {position}: Claude expected '{from_aa}' "
-                f"but sequence has '{actual}' — check numbering offset"
+                f"Position {position}: expected '{from_aa}' but sequence has '{actual}' "
+                f"— check numbering offset"
             )
             return False
         return True
 
     @staticmethod
-    def is_protected(position: int) -> bool:
-        return position in PROTECTED_RESIDUES
+    def is_protected(position: int, protected_residues: set) -> bool:
+        return position in protected_residues
 
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Helpers
 # ─────────────────────────────────────────────────────────────────────────────
 
-def parse_mutation_string(mut_str: str) -> tuple[str, int, str]:
+def parse_mutation_string(mut_str: str) -> tuple:
     """Parse 'A316P' → ('A', 316, 'P')."""
     m = re.match(r'^([A-Z])(\d+)([A-Z])$', mut_str.strip())
     if not m:
@@ -609,35 +550,45 @@ def parse_mutation_string(mut_str: str) -> tuple[str, int, str]:
 
 class RationalPipeline:
 
-    def __init__(
-        self,
-        sequence: str,
-        rounds: int,
-        workdir: Path,
-        pocket_residues: list[int],
-        template: Path = None,
-    ):
-        self.initial_sequence = sequence
+    def __init__(self, config: PipelineConfig, rounds: int, workdir: Path, template: Path = None):
+        self.config = config
         self.rounds = rounds
         self.workdir = workdir
         workdir.mkdir(parents=True, exist_ok=True)
 
-        self.boltz = BoltzRunner(workdir, pocket_residues, template)
-        self.claude = ClaudeReasoner()
+        self.boltz = BoltzRunner(config, workdir, template)
+        self.claude = ClaudeReasoner(config)
         self.mutator = SequenceMutator()
 
-        self.history: list[RoundSummary] = []
+        self.history: list = []
 
     def run(self):
+        """
+        Iterative discovery mode: Boltz-2 → Claude proposes mutation → validate → repeat.
+        Requires Claude CLI and 'context' in config.
+        """
+        if not self.claude.is_available():
+            log.error(
+                "Iterative discovery mode requires the Claude CLI. "
+                "Install it from https://claude.ai/code or use --scan_mutations "
+                "to run a predefined mutation list without Claude."
+            )
+            sys.exit(1)
+
+        if not self.config.context:
+            log.error(
+                "'context' is not set in the config YAML. "
+                "Add a 'context' field describing the reaction mechanism and key residues."
+            )
+            sys.exit(1)
+
         log.info("=" * 60)
-        log.info("UPO PaDa-I × NNBT  —  AI-Rational Iterative Pipeline")
+        log.info(f"{self.config.enzyme_name} × {self.config.substrate_name}  —  AI-Rational Pipeline")
         log.info(f"Rounds: {self.rounds}  |  Workdir: {self.workdir}")
         log.info("=" * 60)
 
-        current_sequence = self.initial_sequence
-        mutations_applied: list[str] = []
-        # Carry forward the mutant result from the previous round to avoid
-        # re-running Boltz on the same sequence at the start of the next round.
+        current_sequence = self.config.sequence
+        mutations_applied: list = []
         carried_result: Optional[BoltzResult] = None
 
         for rnd in range(1, self.rounds + 1):
@@ -645,16 +596,14 @@ class RationalPipeline:
             log.info(f"ROUND {rnd}  |  Mutations so far: {mutations_applied or ['none']}")
             log.info(f"{'─'*60}")
 
-            # ── 1. Boltz-2 co-folding + affinity ─────────────────────────────
             if carried_result is not None:
                 boltz_result = carried_result
                 carried_result = None
-                log.info(f"  Reusing Boltz result carried from previous round (no extra run)")
+                log.info("  Reusing Boltz result carried from previous round")
             else:
                 yaml_path = self.boltz.write_yaml(current_sequence, rnd)
                 boltz_result = self.boltz.run(yaml_path, rnd)
 
-            # ── 2. Claude reasoning ───────────────────────────────────────────
             rationale = self.claude.reason(
                 round_num=rnd,
                 sequence=current_sequence,
@@ -663,55 +612,44 @@ class RationalPipeline:
                 history=self.history,
             )
 
-            log.info(f"\n  Claude reasoning:\n  {rationale.reasoning}")
-            log.info(f"  Proposed: {rationale.proposed_mutation.get('mutation_string')}")
-            log.info(f"  Expected: {rationale.expected_effect}")
-            log.info(f"  Confidence: {rationale.confidence}")
-            if rationale.warning:
-                log.warning(f"  ⚠ Warning: {rationale.warning}")
+            if rationale:
+                log.info(f"\n  Claude reasoning:\n  {rationale.reasoning}")
+                log.info(f"  Proposed: {rationale.proposed_mutation.get('mutation_string')}")
+                log.info(f"  Expected: {rationale.expected_effect}")
+                log.info(f"  Confidence: {rationale.confidence}")
+                if rationale.warning:
+                    log.warning(f"  Warning: {rationale.warning}")
 
-            # ── 3. Validate and apply mutation ────────────────────────────────
             mutation_applied = None
-            prop = rationale.proposed_mutation
-            position = prop.get("position")
-            from_aa = prop.get("from_aa")
-            to_aa = prop.get("to_aa")
+            if rationale:
+                prop = rationale.proposed_mutation
+                position = prop.get("position")
+                from_aa = prop.get("from_aa")
+                to_aa = prop.get("to_aa")
 
-            if position and to_aa:
-                if self.mutator.is_protected(position):
-                    log.warning(
-                        f"  Claude proposed mutation at protected position {position} "
-                        f"— skipping, will ask for alternative next round"
-                    )
-                elif self.mutator.validate(current_sequence, position, from_aa):
-                    new_sequence = self.mutator.apply(current_sequence, position, to_aa)
-                    mut_str = prop.get("mutation_string", f"{from_aa}{position}{to_aa}")
+                if position and to_aa:
+                    if self.mutator.is_protected(position, self.config.protected_residues):
+                        log.warning(f"  Proposed mutation at protected position {position} — skipping")
+                    elif self.mutator.validate(current_sequence, position, from_aa):
+                        new_sequence = self.mutator.apply(current_sequence, position, to_aa)
+                        mut_str = prop.get("mutation_string", f"{from_aa}{position}{to_aa}")
 
-                    # Quick validation run with mutant before committing
-                    log.info(f"  Validating mutant {mut_str} with Boltz-2...")
-                    yaml_mut = self.boltz.write_yaml(new_sequence, rnd, label=mut_str)
-                    boltz_mutant = self.boltz.run(yaml_mut, rnd, label=mut_str)
+                        log.info(f"  Validating {mut_str} with Boltz-2...")
+                        yaml_mut = self.boltz.write_yaml(new_sequence, rnd, label=mut_str)
+                        boltz_mutant = self.boltz.run(yaml_mut, rnd, label=mut_str)
 
-                    delta = boltz_mutant.affinity_pred_value - boltz_result.affinity_pred_value
-                    log.info(
-                        f"  Δaffinity_pred_value = {delta:+.4f} "
-                        f"({'improved ✓' if delta < 0 else 'worse ✗'})"
-                    )
+                        delta = boltz_mutant.affinity_pred_value - boltz_result.affinity_pred_value
+                        log.info(f"  Δaffinity = {delta:+.4f} ({'improved ✓' if delta < 0 else 'worse ✗'})")
 
-                    if delta < 0 or rationale.confidence == "high":
-                        # Accept mutation if affinity improved OR Claude is confident
-                        current_sequence = new_sequence
-                        mutations_applied.append(mut_str)
-                        mutation_applied = mut_str
-                        carried_result = boltz_mutant  # reuse in next round — no double run
-                        log.info(f"  ✓ Mutation {mut_str} accepted")
-                    else:
-                        log.info(
-                            f"  Mutation {mut_str} not accepted "
-                            f"(Δ={delta:+.4f}, confidence={rationale.confidence})"
-                        )
+                        if delta < 0 or rationale.confidence == "high":
+                            current_sequence = new_sequence
+                            mutations_applied.append(mut_str)
+                            mutation_applied = mut_str
+                            carried_result = boltz_mutant
+                            log.info(f"  ✓ {mut_str} accepted")
+                        else:
+                            log.info(f"  {mut_str} not accepted (Δ={delta:+.4f}, confidence={rationale.confidence})")
 
-            # ── 4. Record round ───────────────────────────────────────────────
             summary = RoundSummary(
                 round_num=rnd,
                 sequence=current_sequence,
@@ -727,36 +665,28 @@ class RationalPipeline:
         log.info("\n✓ Pipeline complete.")
         return self.history
 
-    def run_mutation_scan(
-        self,
-        mutations: list[str],
-        rollback_threshold: float = 0.3,
-    ) -> list[dict]:
+    def run_mutation_scan(self, mutations: list, rollback_threshold: float = 0.3) -> list:
         """
-        Sequential ordered mutation scan with backtracking.
+        Scan a predefined ordered mutation list with Boltz-2.
+        No Claude required. Claude commentary is added to step reports if available.
 
-        For each mutation in order:
-          - Apply it to the current (best) sequence
-          - Run Boltz-2 once
-          - If Δaffinity_pred_value ≤ rollback_threshold  →  accept, carry result forward
-          - Else  →  skip (revert to previous sequence/result), move to next mutation
-
-        Total Boltz runs = 1 (WT baseline) + len(mutations)  — never more.
-
-        Usage:
-            python pipeline.py --scan_mutations A316P,F191L,A73T --rollback_threshold 0.3
+        For each mutation:
+          - Apply to current best sequence
+          - Run Boltz-2
+          - Accept if Δaffinity ≤ rollback_threshold, else revert
         """
         log.info("=" * 60)
-        log.info("UPO PaDa-I × NNBT  —  Ordered Mutation Scan")
+        log.info(f"{self.config.enzyme_name} × {self.config.substrate_name}  —  Mutation Scan")
         log.info(f"Mutations (in order): {mutations}")
         log.info(f"Rollback threshold  : Δ > +{rollback_threshold} log10(IC50) → skip")
+        if self.claude.is_available() and self.config.context:
+            log.info("  Claude CLI detected — will add structural commentary to step reports")
         log.info("=" * 60)
 
-        current_sequence = self.initial_sequence
-        mutations_applied: list[str] = []
-        rows: list[dict] = []
+        current_sequence = self.config.sequence
+        mutations_applied: list = []
+        rows: list = []
 
-        # ── Baseline (WT or starting sequence) ───────────────────────────────
         yaml_wt = self.boltz.write_yaml(current_sequence, 0, label="WT")
         current_result = self.boltz.run(yaml_wt, 0, label="WT")
         rows.append(self._scan_row(
@@ -764,16 +694,14 @@ class RationalPipeline:
             result=current_result, delta=0.0, accepted=True, reason="baseline",
         ))
 
-        # ── Ordered scan ─────────────────────────────────────────────────────
         for step, mut_str in enumerate(mutations, start=1):
             from_aa, position, to_aa = parse_mutation_string(mut_str)
 
-            if SequenceMutator.is_protected(position):
+            if SequenceMutator.is_protected(position, self.config.protected_residues):
                 log.warning(f"  Step {step}: {mut_str} targets protected position {position} — skipped")
                 rows.append(self._scan_row(
                     step=step, label=mut_str, mutations=list(mutations_applied),
-                    result=current_result, delta=0.0, accepted=False,
-                    reason="protected residue",
+                    result=current_result, delta=0.0, accepted=False, reason="protected residue",
                 ))
                 continue
 
@@ -781,8 +709,7 @@ class RationalPipeline:
                 log.warning(f"  Step {step}: {mut_str} — residue mismatch, skipped")
                 rows.append(self._scan_row(
                     step=step, label=mut_str, mutations=list(mutations_applied),
-                    result=current_result, delta=0.0, accepted=False,
-                    reason="residue mismatch",
+                    result=current_result, delta=0.0, accepted=False, reason="residue mismatch",
                 ))
                 continue
 
@@ -797,42 +724,53 @@ class RationalPipeline:
             mut_result = self.boltz.run(yaml_mut, step, label=cumulative_label)
 
             delta = mut_result.affinity_pred_value - current_result.affinity_pred_value
-            log.info(
-                f"  Δaffinity_pred_value = {delta:+.4f} "
-                f"(threshold = +{rollback_threshold})"
-            )
+            log.info(f"  Δaffinity_pred_value = {delta:+.4f} (threshold = +{rollback_threshold})")
 
             if delta <= rollback_threshold:
                 accepted = True
                 reason = f"Δ={delta:+.4f} ≤ threshold"
                 current_sequence = candidate_sequence
-                current_result = mut_result   # carry forward — no extra Boltz run
+                current_result = mut_result
                 mutations_applied.append(mut_str)
-                log.info(f"  ✓ {mut_str} accepted — building on this sequence")
+                log.info(f"  ✓ {mut_str} accepted")
             else:
                 accepted = False
-                reason = f"Δ={delta:+.4f} > threshold — too detrimental, rolling back"
+                reason = f"Δ={delta:+.4f} > threshold — rolling back"
                 log.info(f"  ✗ {mut_str} skipped — {reason}")
 
-            rows.append(self._scan_row(
+            row = self._scan_row(
                 step=step, label=cumulative_label, mutations=list(mutations_applied),
                 result=mut_result, delta=delta, accepted=accepted, reason=reason,
-            ))
+            )
+            rows.append(row)
 
-            # Save per-step JSON
+            # Optional Claude commentary on this step
+            rationale = self.claude.reason(
+                round_num=step,
+                sequence=current_sequence,
+                mutations_so_far=list(mutations_applied),
+                boltz_result=mut_result,
+                history=[],
+            )
+
             step_dir = self.workdir / f"scan_step{step}_{mut_str}"
             step_dir.mkdir(exist_ok=True)
-            (step_dir / "step_report.json").write_text(json.dumps(rows[-1], indent=2))
+            step_report = dict(row)
+            if rationale:
+                step_report["claude_reasoning"] = rationale.reasoning
+                step_report["claude_expected_effect"] = rationale.expected_effect
+                step_report["claude_confidence"] = rationale.confidence
+                step_report["claude_alternatives"] = rationale.alternatives
+                step_report["claude_warning"] = rationale.warning
+            (step_dir / "step_report.json").write_text(json.dumps(step_report, indent=2))
 
-        # ── Summary CSV ───────────────────────────────────────────────────────
         df = pd.DataFrame(rows)
         csv_path = self.workdir / "scan_summary.csv"
         df.to_csv(csv_path, index=False)
 
-        # Final accepted sequence
         seq_path = self.workdir / "scan_final_sequence.txt"
         label = "+".join(mutations_applied) or "WT"
-        seq_path.write_text(f">PaDa-I_scan_{label}\n{current_sequence}\n")
+        seq_path.write_text(f">{self.config.enzyme_name}_scan_{label}\n{current_sequence}\n")
 
         log.info("\n" + "=" * 60)
         log.info("SCAN TRAJECTORY")
@@ -846,15 +784,7 @@ class RationalPipeline:
         return rows
 
     @staticmethod
-    def _scan_row(
-        step: int,
-        label: str,
-        mutations: list[str],
-        result: BoltzResult,
-        delta: float,
-        accepted: bool,
-        reason: str,
-    ) -> dict:
+    def _scan_row(step, label, mutations, result, delta, accepted, reason) -> dict:
         return {
             "step": step,
             "label": label,
@@ -872,7 +802,7 @@ class RationalPipeline:
         d = self.workdir / f"round{s.round_num}"
         d.mkdir(exist_ok=True)
 
-        report = {
+        report: dict = {
             "round": s.round_num,
             "mutations_so_far": s.mutations_so_far,
             "mutation_applied_this_round": s.mutation_applied,
@@ -882,21 +812,22 @@ class RationalPipeline:
                 "confidence": s.boltz_result.confidence_score,
                 "contacts": s.boltz_result.contacts,
             },
-            "claude_reasoning": s.claude_rationale.reasoning,
-            "claude_proposal": s.claude_rationale.proposed_mutation,
-            "expected_effect": s.claude_rationale.expected_effect,
-            "claude_confidence": s.claude_rationale.confidence,
-            "alternatives": s.claude_rationale.alternatives,
-            "warning": s.claude_rationale.warning,
-            "full_claude_response": s.claude_rationale.raw_response,
         }
+        if s.claude_rationale:
+            report["claude_reasoning"] = s.claude_rationale.reasoning
+            report["claude_proposal"] = s.claude_rationale.proposed_mutation
+            report["expected_effect"] = s.claude_rationale.expected_effect
+            report["claude_confidence"] = s.claude_rationale.confidence
+            report["alternatives"] = s.claude_rationale.alternatives
+            report["warning"] = s.claude_rationale.warning
+
         (d / "round_report.json").write_text(json.dumps(report, indent=2))
         log.info(f"  Saved round report → {d / 'round_report.json'}")
 
     def _save_final_report(self):
         rows = []
         for s in self.history:
-            rows.append({
+            row = {
                 "round": s.round_num,
                 "mutation_applied": s.mutation_applied or "none",
                 "cumulative_mutations": "+".join(s.mutations_so_far) or "WT",
@@ -905,27 +836,27 @@ class RationalPipeline:
                 "confidence": round(s.boltz_result.confidence_score, 4),
                 "n_contacts": len(s.boltz_result.contacts),
                 "contacts": ", ".join(s.boltz_result.contacts),
-                "claude_confidence": s.claude_rationale.confidence,
-            })
+            }
+            if s.claude_rationale:
+                row["claude_confidence"] = s.claude_rationale.confidence
+            rows.append(row)
 
         df = pd.DataFrame(rows)
         csv_path = self.workdir / "pipeline_summary.csv"
         df.to_csv(csv_path, index=False)
 
-        # Print trajectory
         log.info("\n" + "=" * 60)
         log.info("EVOLUTION TRAJECTORY")
         log.info("=" * 60)
         log.info(df[["round","mutation_applied","cumulative_mutations",
                       "affinity_pred_value","binder_probability"]].to_string(index=False))
 
-        # Save final optimised sequence
         if self.history:
             final_seq = self.history[-1].sequence
             final_muts = self.history[-1].mutations_so_far
             seq_path = self.workdir / "final_sequence.txt"
             seq_path.write_text(
-                f">PaDa-I_optimised_{'_'.join(final_muts) or 'WT'}\n{final_seq}\n"
+                f">{self.config.enzyme_name}_optimised_{'_'.join(final_muts) or 'WT'}\n{final_seq}\n"
             )
             log.info(f"\nFinal sequence → {seq_path}")
             log.info(f"Mutations: {final_muts or 'none'}")
@@ -939,39 +870,31 @@ class RationalPipeline:
 
 def parse_args():
     p = argparse.ArgumentParser(
-        description="UPO PaDa-I × NNBT AI-rational iterative pipeline"
+        description="Enzyme × substrate AI-rational iterative mutation pipeline"
     )
-    p.add_argument("--rounds", type=int, default=4)
+    p.add_argument(
+        "--config", type=Path, required=True,
+        help="Path to experiment config YAML (see configs/pada1_nnbt.yaml for example)"
+    )
+    p.add_argument("--rounds", type=int, default=4,
+        help="Number of rounds (iterative discovery mode only)")
     p.add_argument("--workdir", type=Path, default=Path("results"))
     p.add_argument(
-        "--pocket_residues", type=str, default="69,121,199,76,191,316",
-        help="Comma-separated residue numbers for pocket constraint"
-    )
-    p.add_argument(
-        "--sequence", type=str, default=None,
-        help="Override default PaDa-I sequence (FASTA string, no header)"
-    )
-    p.add_argument(
         "--template", type=Path, default=None,
-        help="CIF/PDB file to use as backbone template (e.g. 5OXU.cif); anchors chain A at 1.5 Å"
+        help="CIF/PDB file for backbone template constraint"
     )
     p.add_argument(
         "--scan_mutations", type=str, default=None,
         help=(
             "Comma-separated ordered mutations to scan (e.g. 'A316P,F191L,A73T'). "
-            "Activates scan mode instead of the iterative AI pipeline. "
+            "Activates scan mode — no Claude required. "
             "Each mutation is tested in order; if it worsens affinity beyond "
-            "--rollback_threshold it is skipped and the scan continues from the "
-            "previous best sequence."
+            "--rollback_threshold it is skipped."
         ),
     )
     p.add_argument(
         "--rollback_threshold", type=float, default=0.3,
-        help=(
-            "Max allowed Δaffinity_pred_value (log10 IC50) for a mutation to be "
-            "accepted in scan mode. A mutation that worsens affinity by more than "
-            "this value is skipped. Default: 0.3 (≈ 2× worse IC50)."
-        ),
+        help="Max allowed Δaffinity for acceptance in scan mode (default: 0.3)"
     )
     return p.parse_args()
 
@@ -979,14 +902,12 @@ def parse_args():
 if __name__ == "__main__":
     args = parse_args()
 
-    pocket = [int(x) for x in args.pocket_residues.split(",")]
-    sequence = args.sequence or PADA1_SEQUENCE
+    config = load_config(args.config)
 
     pipeline = RationalPipeline(
-        sequence=sequence,
+        config=config,
         rounds=args.rounds,
         workdir=args.workdir,
-        pocket_residues=pocket,
         template=args.template,
     )
 
