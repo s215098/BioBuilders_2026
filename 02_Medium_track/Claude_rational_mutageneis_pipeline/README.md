@@ -1,8 +1,8 @@
-# Enzyme × Substrate — AI-Rational Mutation Scan Pipeline
+# Automated Rational Mutation Scan Pipeline
 
 Iterative pipeline for evaluating point mutations on an enzyme–substrate pair using **Boltz-2** co-folding and affinity prediction. Claude (optional) adds structural reasoning to each step report when available.
 
-Built for the DTU iGEM 2025 project on epoxy resin degradation, but designed to work with any enzyme and substrate.
+Built by iGEM 2026 DTU BioBuilders for epoxy resin degradation, but designed to work with any enzyme and substrate.
 
 ---
 
@@ -21,7 +21,6 @@ For each mutation in your list:
   5. Save step report (JSON) + running summary (CSV)
 ```
 
-No FoldX. No GNINA. No PDB manipulation. Mutations are applied as string operations on the sequence — Boltz-2 handles the structural prediction from scratch each round.
 
 ---
 
@@ -52,7 +51,7 @@ boltz predict --help
 No local GPU? Options:
 - [Google Colab](https://colab.research.google.com) (free T4)
 - [Tamarind Bio](https://app.tamarind.bio/boltz) (web interface for Boltz)
-- RunPod / Lambda Labs (pay-per-use cloud GPU)
+- [DTU HPC](https://docs.google.com/document/d/1JnY5QevqU_iZuEjYxGVdGpGGQCkvsjftTunuR64RGZs/edit?usp=drive_link)
 
 ### Claude CLI (optional)
 
@@ -187,30 +186,6 @@ context: |                    # optional, required only when using Claude
 
 ---
 
-## Baseline docking (optional)
-
-`dock_nnbt.py` docks NNBT into the PaDa-I crystal structure (PDB: 6EKZ) using AutoDock Vina. This is useful for understanding the wild-type binding mode before running the Boltz-2 scan. It is independent of `pipeline.py`.
-
-**Additional requirements:**
-```bash
-pip install rdkit meeko
-```
-
-AutoDock Vina binary:
-```bash
-# Linux
-wget https://github.com/ccsb-scripps/AutoDock-Vina/releases/download/v1.2.5/vina_1.2.5_linux_x86_64
-chmod +x vina_1.2.5_linux_x86_64 && mv vina_1.2.5_linux_x86_64 vina
-```
-
-```bash
-python3 dock_nnbt.py --vina ./vina --workdir results/docking/
-```
-
-Outputs a docking report with Vina scores, contact residues, and a geometry check (α-C to heme Fe distance).
-
----
-
 ## Example results — PaDa-I × NNBT
 
 Wild-type baseline (AutoDock Vina): **−6.64 kcal/mol**, α-C to Fe = 3.45 Å (borderline non-productive).
@@ -234,4 +209,3 @@ All three accepted. The affinity differences are small (~0.06 log units total). 
 - Ramirez-Escudero et al. (2018) — PaDa-I active site (PDB: [6EKZ](https://www.rcsb.org/structure/6EKZ))
 - Molina-Espeja et al. (2014) — PaDa-I directed evolution
 - [Boltz-2](https://github.com/jwohlwend/boltz) — co-folding and affinity prediction
-- [AutoDock Vina](https://github.com/ccsb-scripps/AutoDock-Vina) — molecular docking
