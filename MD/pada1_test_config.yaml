@@ -1,0 +1,38 @@
+# pada1_test_config.yaml — minimal run for testing (1000 steps each phase)
+
+pdb_id:       "5OXU"
+workdir:      "/root/pada1_md_test"
+ph:           7.0
+keep_glycans: false
+cys_axial:    36
+
+mcpb_cutoff:  2.8
+mcpb_ff:      "ff14SB"
+mcpb_gaff:    "gaff2"
+
+qm_engine:      "orca"
+orca_exe:       "/root/orca_6_1_1/orca"
+orca_nproc:     2
+orca_mem_mb:    2000
+gaussian_nproc: 4
+gaussian_mem:   "8GB"
+spin_mult:      6
+charge:         0
+
+solv_buffer:  12.0
+ion_conc:     0.15
+water_model:  "TIP3PBOX"
+
+platform:       "CPU"     # CPU for testing (no GPU needed)
+precision:      "mixed"
+temperature_K:  300
+friction:       1.0
+timestep_fs:    2.0
+emin_tol:       5.0
+equil_ns:       0.002     # 1000 steps
+prod_ns:        0.002     # 1000 steps
+save_interval:  100
+npt_prod:       true
+
+fe_s_warn_ang: 2.8
+channel_res:   [76, 191]

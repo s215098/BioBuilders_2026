@@ -1,0 +1,51 @@
+# pada1_config.yaml
+# Configuration for PaDa-I UPO MD pipeline
+# Override any DEFAULT_CONFIG value here.
+# Leave a field commented out to use the default.
+
+# ── structure ────────────────────────────────────────────────────────────────
+pdb_id:       "5OXU"
+workdir:      "pada1_md"
+# ligand_sdf: "naphthalene.sdf"    # optional docked substrate
+
+# ── preparation ──────────────────────────────────────────────────────────────
+ph:           7.0
+keep_glycans: false       # true = keep GlcNAc; false = strip (simpler first run)
+cys_axial:    36          # Cys36 is the Fe-thiolate axial ligand in PaDa-I
+
+# ── MCPB.py ──────────────────────────────────────────────────────────────────
+mcpb_cutoff:  2.8         # Angstroms — coordination shell detection
+mcpb_ff:      "ff14SB"
+mcpb_gaff:    "gaff2"
+
+# ── QM engine ────────────────────────────────────────────────────────────────
+qm_engine:      "orca"    # "orca" (free, academic) or "gaussian"
+orca_exe:       "/root/orca_6_1_1/orca"
+orca_nproc:     4         # parallel cores for ORCA %pal
+orca_mem_mb:    4000      # MB per core for ORCA %maxcore
+gaussian_exe:   "g16"     # used only if qm_engine = "gaussian"
+gaussian_nproc: 8
+gaussian_mem:   "16GB"
+spin_mult:      6         # ferric high-spin (S=5/2): 2S+1 = 6   ← DO NOT CHANGE
+charge:         0         # overall QM model charge
+
+# ── solvation ─────────────────────────────────────────────────────────────────
+solv_buffer:  12.0        # Angstroms water box padding
+ion_conc:     0.15        # mol/L NaCl
+water_model:  "TIP3PBOX"
+
+# ── MD ───────────────────────────────────────────────────────────────────────
+platform:       "CUDA"    # CUDA | CPU | OpenCL
+precision:      "mixed"
+temperature_K:  300
+friction:       1.0       # ps^-1 Langevin friction
+timestep_fs:    2.0
+emin_tol:       5.0       # kJ/mol/nm
+equil_ns:       1.0       # NVT equilibration
+prod_ns:        100.0     # production (adjust for available compute)
+save_interval:  10000     # save frame every N steps (~20 ps)
+npt_prod:       true      # NPT ensemble for production
+
+# ── analysis ─────────────────────────────────────────────────────────────────
+fe_s_warn_ang: 2.8        # Angstroms — alert if Fe-S drifts above this
+channel_res:   [76, 191]  # Phe76-Phe191 CA pair (channel entrance width)
