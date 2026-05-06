@@ -1057,15 +1057,17 @@ def _recover_paths(cfg: dict, start_stage: int) -> dict:
     wd     = Path(cfg["workdir"])
     paths  = {"pdb_id": pdb_id}
 
+    qm_ext = "inp" if cfg.get("qm_engine", "orca").lower() == "orca" else "com"
+
     candidates = {
         "prot_pdb":   wd / "01_prep" / f"{cfg['pdb_id']}_protein.pdb",
         "heme_pdb":   wd / "01_prep" / f"{cfg['pdb_id']}_heme.pdb",
         "mg_pdb":     wd / "01_prep" / f"{cfg['pdb_id']}_mg.pdb",
         "wdir":       wd / "02_mcpb",
         "mcpb_in":    wd / "02_mcpb" / f"{pdb_id}_heme.in",
-        "small_opt":  wd / "02_mcpb" / f"{pdb_id}_heme_small_opt.com",
-        "small_fc":   wd / "02_mcpb" / f"{pdb_id}_heme_small_fc.com",
-        "large_mk":   wd / "02_mcpb" / f"{pdb_id}_heme_large_mk.com",
+        "small_opt":  wd / "02_mcpb" / f"{pdb_id}_heme_small_opt.{qm_ext}",
+        "small_fc":   wd / "02_mcpb" / f"{pdb_id}_heme_small_fc.{qm_ext}",
+        "large_mk":   wd / "02_mcpb" / f"{pdb_id}_heme_large_mk.{qm_ext}",
         "frcmod":     wd / "02_mcpb" / f"{pdb_id}_heme_small.frcmod",
         "resp_mol2":  wd / "02_mcpb" / f"{pdb_id}_heme_large_RESP.mol2",
         "tleap_in":   wd / "02_mcpb" / f"{pdb_id}_heme_tleap.in",
