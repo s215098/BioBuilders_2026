@@ -311,6 +311,11 @@ def stage2_mcpb_step1(cfg: dict, paths: dict) -> dict:
     log.info(f"  Fe atom serial number: {fe_serial}")
 
     # ── write MCPB.py input ──────────────────────────────────────────────────
+    qm_engine = cfg.get("qm_engine", "orca").lower()
+    orca_block = (
+        f"\nquantum_soft orca\norca_mem_mb {cfg.get('orca_mem_mb', 4000)}\n"
+        if qm_engine == "orca" else ""
+    )
     log.info(f"Writing MCPB.py input → {mcpb_in}")
     mcpb_in.write_text(textwrap.dedent(f"""
         original_pdb {merged.name}
@@ -324,7 +329,7 @@ def stage2_mcpb_step1(cfg: dict, paths: dict) -> dict:
         gaff_version {cfg['mcpb_gaff']}
         large_opt 1
         conf_search 0
-    """).strip() + "\n")
+    """).strip() + orca_block + "\n")
 
     # ── write a minimal Fe mol2 ───────────────────────────────────────────────
     fe_mol2 = wdir / "FE.mol2"
@@ -355,15 +360,14 @@ def stage2_mcpb_step1(cfg: dict, paths: dict) -> dict:
         )
 
     # ── run MCPB.py step 1 ───────────────────────────────────────────────────
-    qm_engine = cfg.get("qm_engine", "gamess").lower()
+    # MCPB.py generates .inp for ORCA (quantum_soft orca), .com for Gaussian
+    ext = "inp" if qm_engine == "orca" else "com"
     log.info(f"Running MCPB.py step 1 (QM engine: {qm_engine})...")
     run(f"MCPB.py -i {mcpb_in.name} -s 1", cwd=str(wdir))
 
-    # MCPB.py always generates .com (Gaussian) inputs in step 1;
-    # for GAMESS we patch them to .inp format after
-    small_opt = wdir / f"{pdb_id}_heme_small_opt.com"
-    small_fc  = wdir / f"{pdb_id}_heme_small_fc.com"
-    large_mk  = wdir / f"{pdb_id}_heme_large_mk.com"
+    small_opt = wdir / f"{pdb_id}_heme_small_opt.{ext}"
+    small_fc  = wdir / f"{pdb_id}_heme_small_fc.{ext}"
+    large_mk  = wdir / f"{pdb_id}_heme_large_mk.{ext}"
 
     for f in [small_opt, small_fc, large_mk]:
         if not f.exists():
@@ -372,10 +376,10 @@ def stage2_mcpb_step1(cfg: dict, paths: dict) -> dict:
 
     spin   = cfg["spin_mult"]
     charge = cfg["charge"]
-    nproc  = cfg["gaussian_nproc"]
-    mem    = cfg["gaussian_mem"]
 
     if qm_engine == "gaussian":
+        nproc = cfg["gaussian_nproc"]
+        mem   = cfg["gaussian_mem"]
         for com_file in [small_opt, small_fc, large_mk]:
             txt = com_file.read_text()
             txt = re.sub(r"%[Nn]proc\w*=\d+", f"%nproc={nproc}", txt)
@@ -383,15 +387,7 @@ def stage2_mcpb_step1(cfg: dict, paths: dict) -> dict:
             txt = re.sub(r"^(\s*0\s+1\s*)$", f"  {charge} {spin}", txt, flags=re.MULTILINE)
             com_file.write_text(txt)
         log.info(f"  Patched Gaussian inputs: charge={charge}, mult={spin}, nproc={nproc}, mem={mem}")
-    else:
-        # GAMESS: patch charge/multiplicity in the $CONTRL group
-        for com_file in [small_opt, small_fc, large_mk]:
-            txt = com_file.read_text()
-            txt = re.sub(r"ICHARG=\s*\d+", f"ICHARG={charge}", txt)
-            txt = re.sub(r"MULT=\s*\d+",   f"MULT={spin}",     txt)
-            txt = re.sub(r"NCORE=\s*\d+",  f"NCORE={nproc}",   txt)
-            com_file.write_text(txt)
-        log.info(f"  Patched GAMESS inputs: charge={charge}, mult={spin}, nproc={nproc}")
+    # ORCA: MCPB.py writes correct ORCA format directly — no patching needed
 
     return {
         "wdir":       str(wdir),

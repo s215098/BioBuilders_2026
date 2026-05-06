@@ -69,8 +69,13 @@ def _run_stage2(engine: str, tmp_path: Path) -> tuple[dict, Path]:
         "prot_pdb": str(prep_dir / f"{cfg['pdb_id']}_protein.pdb"),
         "heme_pdb": str(prep_dir / f"{cfg['pdb_id']}_heme.pdb"),
     }
-    for p in paths_in.values():
-        Path(p).write_text("ATOM      1  CA  ALA A   1       0.000   0.000   0.000\nEND\n")
+    Path(paths_in["prot_pdb"]).write_text(
+        "ATOM      1  CA  ALA A   1       0.000   0.000   0.000\nEND\n"
+    )
+    # heme PDB must contain the Fe atom so stage2 can find it after merging
+    Path(paths_in["heme_pdb"]).write_text(
+        "HETATM    1 FE   HEM A   1       0.000   0.000   0.000  1.00  0.00          FE\nEND\n"
+    )
 
     with patch("pada1_md_pipeline.run"), patch("pada1_md_pipeline.require_binary"):
         result = pipeline.stage2_mcpb_step1(cfg, paths_in)
