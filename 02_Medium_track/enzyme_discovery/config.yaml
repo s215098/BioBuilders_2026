@@ -1,0 +1,45 @@
+# UPO Structure Retrieval & Classification Pipeline
+# BioBuilders 2026
+
+# --- Query accessions (from CUPP per-clade representatives) ---
+queries:
+  - A0ACD6BA37   # clade 1
+  - A0A8H5CVF9   # clade 10
+  - A0AAN7UUI0   # clade 11
+  - A0A4V1Q376   # clade 2
+  - A0ABF7PQ10   # clade 3
+  - A0A317VD19   # clade 4
+  - A0A8T9CJ62   # clade 5
+  - A0A0C9UYV8   # clade 6
+  - A0A2S6CC00   # clade 7
+  - K5Y567       # clade 8
+  - T0LWP6       # clade 9
+
+# --- Reference structures ---
+references:
+  long_upo:
+    pdb_id: "5OXU"       # PaDa-I (evolved AaeUPO), 1.47 Å
+    chain: "A"
+    name: "PaDa-I"
+    phe_triad: [121, 199, 69]   # Phe triad residue numbers (AaeUPO numbering)
+    cys_axial: 36               # Cys axial heme ligand
+  short_upo:
+    pdb_id: "5FUJ"       # MroUPO (dimeric — chain A used)
+    chain: "A"
+    name: "MroUPO"
+    phe_triad: null             # to be mapped after alignment
+    cys_axial: null
+
+# --- Classification thresholds ---
+classification:
+  length_long_min: 300          # mature protein aa length cutoffs
+  length_long_max: 420
+  length_short_min: 220
+  length_short_max: 310
+  length_overlap_zone: [300, 310]  # flag for manual check
+  tmscore_min_diff: 0.05        # min TM-score diff to call confidently
+
+# --- Output ---
+output_dir: "results"
+structure_dir: "results/structures"
+logs_dir: "results/logs"
