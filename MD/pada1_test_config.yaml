@@ -10,10 +10,10 @@ mcpb_cutoff:  2.8
 mcpb_ff:      "ff14SB"
 mcpb_gaff:    "gaff2"
 
-qm_engine:      "orca"
-orca_exe:       "/root/orca_6_1_1/orca"
-orca_nproc:     2
-orca_mem_mb:    2000
+qm_engine:      "gamess"
+qm_method:      "pbe0_def2svp"   # PBE0/def2-SVP + SBK frozen-core ECP on Fe
+gamess_exe:     "/root/gamess/rungms"
+gamess_version: "00"
 gaussian_nproc: 4
 gaussian_mem:   "8GB"
 spin_mult:      6

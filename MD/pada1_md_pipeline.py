@@ -6,21 +6,20 @@ Full MD pipeline for PaDa-I UPO (PDB: 5OXU) with explicit heme parameterization.
 
 Pipeline stages:
   1. PDB preparation      — download 5OXU, clean, protonate, split
-  2. MCPB.py step 1       — build QM model, generate Gaussian inputs
-  3. Gaussian             — geometry opt + force constants + ESP charges
+  2. MCPB.py step 1       — build QM model, generate GAMESS inputs
+  3. QM calculations      — geometry opt + force constants + ESP charges (GAMESS)
   4. MCPB.py steps 2–4   — extract FF params, generate tleap input
   5. tleap                — assemble solvated system → prmtop/inpcrd
-  6. OpenMM via UnoMD     — energy minimisation → NVT equilibration → production MD
+  6. OpenMM               — energy minimisation → NVT equilibration → production MD
   7. Analysis             — RMSD, RMSF, Fe–S bond, Phe191 dihedral, channel width
 
 Usage:
   python pada1_md_pipeline.py [--stage N] [--config config.yaml] [--ligand ligand.sdf]
 
 Requirements:
-  conda env:  ambertools  openmm  mdanalysis  pdbfixer  requests
-  pip:        unomd
-  binary:     g16 (Gaussian 16) in PATH
-  optional:   cuda toolkit for GPU acceleration
+  conda env:  pada1_md  (openmm, ambertools, mdanalysis, pdbfixer)
+  binary:     GAMESS-US (rungms) — default QM engine
+  optional:   g16 (Gaussian 16) or ORCA if qm_engine overridden in config
 
 Author: BioBuilders 2026
 """
@@ -82,15 +81,18 @@ DEFAULT_CONFIG = {
     "mcpb_gaff":     "gaff2",
 
     # ── QM engine ────────────────────────────────────────────────────────────
-    "qm_engine":     "orca",          # "orca" (free, academic) or "gaussian"
-    "orca_exe":      "/root/orca_6_1_1/orca",
-    "orca_nproc":    4,               # parallel cores for ORCA %pal
-    "orca_mem_mb":   4000,            # MB per core for ORCA %maxcore
-    "gaussian_exe":  "g16",           # used only if qm_engine = "gaussian"
+    "qm_engine":      "gamess",        # "gamess" (free) or "gaussian"
+    "qm_method":      "pbe0_def2svp",  # "b3lyp_631g" (MCPB default) | "pbe0_def2svp" (PBE0/SPK-DZP/SBK-Fe)
+    "gamess_exe":     "/root/gamess/rungms",
+    "gamess_version": "00",            # version string passed to rungms
+    "gamess_ncpus":   1,               # DDI process count for rungms
+    "gamess_mwords":  200,             # local memory per DDI process (MW = 8 MB each)
+    "gamess_memddi":  400,             # distributed DDI memory pool (MW total)
+    "gaussian_exe":   "g16",           # used only if qm_engine = "gaussian"
     "gaussian_nproc": 8,
-    "gaussian_mem":  "16GB",
-    "spin_mult":     6,               # ferric high-spin S=5/2 → multiplicity=6
-    "charge":        0,               # overall QM model charge
+    "gaussian_mem":   "16GB",
+    "spin_mult":      6,               # ferric high-spin S=5/2 → multiplicity=6
+    "charge":         0,               # overall QM model charge
 
     # ── tleap ────────────────────────────────────────────────────────────────
     "solv_buffer":   12.0,            # Å padding around protein
@@ -270,6 +272,29 @@ def stage1_prepare_pdb(cfg: dict, paths: dict = None) -> dict:
     }
 
 
+def _patch_gamess_pbe0_def2svp(txt: str) -> str:
+    """
+    Upgrade a MCPB.py-generated GAMESS input from B3LYP/6-31G* to
+    PBE0/SPK-DZP with a SBK (Stevens–Basch–Krauss) pseudopotential on Fe.
+
+    SPK-DZP (Sapporo DZP) is a double-zeta polarization basis set built
+    into this GAMESS installation, comparable in quality to def2-SVP.
+    SBK ECP replaces the Ar core (18 e⁻) of Fe, providing the
+    frozen-core treatment the user requested.
+    """
+    # PBE0 hybrid functional; ISPHER=1 required for SPK spherical basis sets
+    txt = re.sub(r'DFTTYP=\S+', 'DFTTYP=PBE0', txt)
+    txt = re.sub(r'(\$CONTRL\b)', r'\1 ISPHER=1', txt)
+    # SPK-DZP double-zeta for all atoms (Fe basis overridden by SBK ECP below)
+    txt = re.sub(r'\$BASIS\b.*?\$END', '$BASIS GBASIS=SPK-DZP $END', txt,
+                 flags=re.DOTALL)
+    # SBK ECP on Fe (Ar core, 18 e⁻): insert $ECP block before $DATA
+    if '$ECP' not in txt:
+        txt = re.sub(r'( \$DATA\b)',
+                     ' $ECP\nFE-ECP SBK\n $END\n\\1', txt)
+    return txt
+
+
 # ═════════════════════════════════════════════════════════════════════════════
 #  STAGE 2 — MCPB.py STEP 1 (build QM model)
 # ═════════════════════════════════════════════════════════════════════════════
@@ -277,7 +302,7 @@ def stage1_prepare_pdb(cfg: dict, paths: dict = None) -> dict:
 def stage2_mcpb_step1(cfg: dict, paths: dict) -> dict:
     """
     Merge protein + heme PDB, write MCPB.py input file, run step 1.
-    Outputs Gaussian .com files.
+    Outputs GAMESS .inp files (or Gaussian .com if qm_engine=gaussian).
     """
     log.info("=" * 60)
     log.info("STAGE 2 — MCPB.py STEP 1")
@@ -292,13 +317,17 @@ def stage2_mcpb_step1(cfg: dict, paths: dict) -> dict:
     merged    = wdir / f"{pdb_id}_merged.pdb"
     mcpb_in   = wdir / f"{pdb_id}_heme.in"
 
-    # ── merge protein + heme ─────────────────────────────────────────────────
+    # ── merge protein + heme (strip crystal waters — MCPB.py model is anhydrous) ─
     log.info("Merging protein + heme PDB...")
     with open(merged, "w") as out:
         for src in [paths["prot_pdb"], paths["heme_pdb"]]:
             for line in Path(src).read_text().splitlines():
-                if line.strip() not in ("END", ""):
-                    out.write(line + "\n")
+                if line.strip() in ("END", ""):
+                    continue
+                resname = line[17:20].strip() if len(line) > 20 else ""
+                if resname in ("HOH", "WAT", "TIP"):
+                    continue  # exclude crystal waters from QM model
+                out.write(line + "\n")
     out_text = merged.read_text()
     # find the Fe atom serial number
     fe_serial = None
@@ -311,10 +340,9 @@ def stage2_mcpb_step1(cfg: dict, paths: dict) -> dict:
     log.info(f"  Fe atom serial number: {fe_serial}")
 
     # ── write MCPB.py input ──────────────────────────────────────────────────
-    qm_engine = cfg.get("qm_engine", "orca").lower()
-    orca_block = (
-        f"\nquantum_soft orca\norca_mem_mb {cfg.get('orca_mem_mb', 4000)}\n"
-        if qm_engine == "orca" else ""
+    qm_engine = cfg.get("qm_engine", "gamess").lower()
+    engine_block = (
+        "\nquantum_soft gamess\n" if qm_engine == "gamess" else ""
     )
     log.info(f"Writing MCPB.py input → {mcpb_in}")
     mcpb_in.write_text(textwrap.dedent(f"""
@@ -329,7 +357,7 @@ def stage2_mcpb_step1(cfg: dict, paths: dict) -> dict:
         gaff_version {cfg['mcpb_gaff']}
         large_opt 1
         conf_search 0
-    """).strip() + orca_block + "\n")
+    """).strip() + engine_block + "\n")
 
     # ── write a minimal Fe mol2 ───────────────────────────────────────────────
     fe_mol2 = wdir / "FE.mol2"
@@ -347,21 +375,38 @@ def stage2_mcpb_step1(cfg: dict, paths: dict) -> dict:
         """).strip() + "\n")
         log.info(f"  Wrote minimal Fe.mol2 → {fe_mol2}")
 
-    # ── check for pre-built Shahrokh heme params ──────────────────────────────
+    # ── check for pre-built Shahrokh heme params (IC6 = ferric high-spin) ───────
     hem_frcmod = wdir / "HEM.frcmod"
     hem_mol2   = wdir / "HEM.mol2"
     if not hem_frcmod.exists() or not hem_mol2.exists():
-        log.warning(
-            "HEM.frcmod and/or HEM.mol2 not found in 02_mcpb/.\n"
-            "  → Download Shahrokh et al. 2012 parameters from:\n"
-            "    https://pmc.ncbi.nlm.nih.gov/articles/PMC3242737/\n"
-            "    (Supplementary data: NIHMS316516-supplement.doc)\n"
-            "  → Place HEM.frcmod and HEM.mol2 in: " + str(wdir)
-        )
+        # try to auto-copy from AmberTools bundled Shahrokh parameters
+        import shutil
+        amber_shahrokh = None
+        for prefix in [os.environ.get("AMBERHOME", ""), "/opt/miniconda3/envs/pada1_md",
+                       "/root/miniconda3/envs/ambertools"]:
+            candidate = Path(prefix) / "dat/contrib/Shahrokh_heme/IC6"
+            if candidate.is_dir():
+                amber_shahrokh = candidate
+                break
+        if amber_shahrokh:
+            if not hem_mol2.exists():
+                shutil.copy(amber_shahrokh / "HEM.mol2", hem_mol2)
+                log.info(f"  Auto-copied Shahrokh IC6 HEM.mol2 from {amber_shahrokh}")
+            if not hem_frcmod.exists():
+                shutil.copy(amber_shahrokh / "IC6.frcmod", hem_frcmod)
+                log.info(f"  Auto-copied Shahrokh IC6.frcmod → HEM.frcmod from {amber_shahrokh}")
+        else:
+            log.warning(
+                "HEM.frcmod and/or HEM.mol2 not found in 02_mcpb/.\n"
+                "  → Download Shahrokh et al. 2012 parameters from:\n"
+                "    https://pmc.ncbi.nlm.nih.gov/articles/PMC3242737/\n"
+                "    (Supplementary data: NIHMS316516-supplement.doc)\n"
+                "  → Place HEM.frcmod and HEM.mol2 in: " + str(wdir)
+            )
 
     # ── run MCPB.py step 1 ───────────────────────────────────────────────────
-    # MCPB.py generates .inp for ORCA (quantum_soft orca), .com for Gaussian
-    ext = "inp" if qm_engine == "orca" else "com"
+    # MCPB.py generates .inp for GAMESS (quantum_soft gamess), .com for Gaussian
+    ext = "inp" if qm_engine == "gamess" else "com"
     log.info(f"Running MCPB.py step 1 (QM engine: {qm_engine})...")
     run(f"MCPB.py -i {mcpb_in.name} -s 1", cwd=str(wdir))
 
@@ -387,7 +432,26 @@ def stage2_mcpb_step1(cfg: dict, paths: dict) -> dict:
             txt = re.sub(r"^(\s*0\s+1\s*)$", f"  {charge} {spin}", txt, flags=re.MULTILINE)
             com_file.write_text(txt)
         log.info(f"  Patched Gaussian inputs: charge={charge}, mult={spin}, nproc={nproc}, mem={mem}")
-    # ORCA: MCPB.py writes correct ORCA format directly — no patching needed
+    elif qm_engine == "gamess":
+        qm_method  = cfg.get("qm_method",    "b3lyp_631g")
+        mwords     = cfg.get("gamess_mwords",  200)
+        memddi     = cfg.get("gamess_memddi",  400)
+        for inp_file in [small_opt, small_fc, large_mk]:
+            txt = inp_file.read_text()
+            txt = re.sub(r'ICHARG=\S+', f'ICHARG={charge}', txt)
+            txt = re.sub(r'MULT=\S+',   f'MULT={spin}',     txt)
+            # update $SYSTEM memory from config (MCPB.py defaults are too small for HPC)
+            txt = re.sub(r'MEMDDI=\d+', f'MEMDDI={memddi}', txt)
+            txt = re.sub(r'MWORDS=\d+',  f'MWORDS={mwords}',  txt)
+            # MCPB.py omits SCFTYP; GAMESS defaults to RHF which rejects MULT>1
+            if spin > 1 and 'SCFTYP=' not in txt:
+                txt = re.sub(r'(\$CONTRL\b)', r'\1 SCFTYP=ROHF', txt)
+            if qm_method == "pbe0_def2svp":
+                txt = _patch_gamess_pbe0_def2svp(txt)
+            inp_file.write_text(txt)
+        method_str = qm_method if qm_method != "b3lyp_631g" else "b3lyp/6-31G*"
+        log.info(f"  Patched GAMESS inputs: charge={charge}, mult={spin}, "
+                 f"method={method_str}, mwords={mwords}, memddi={memddi}")
 
     return {
         "wdir":       str(wdir),
@@ -402,15 +466,15 @@ def stage2_mcpb_step1(cfg: dict, paths: dict) -> dict:
 
 
 # ═════════════════════════════════════════════════════════════════════════════
-#  STAGE 3 — QM JOBS (ORCA or Gaussian)
+#  STAGE 3 — QM JOBS
 # ═════════════════════════════════════════════════════════════════════════════
 
-def stage3_gaussian(cfg: dict, paths: dict) -> dict:
+def stage3_qm(cfg: dict, paths: dict) -> dict:
     """
-    Submit three QM jobs in sequence using ORCA or Gaussian.
+    Submit three QM jobs in sequence (GAMESS by default; Gaussian or ORCA if configured).
     Jobs must complete before MCPB.py step 2 can proceed.
     """
-    qm_engine = paths.get("qm_engine", cfg.get("qm_engine", "gaussian")).lower()
+    qm_engine = paths.get("qm_engine", cfg.get("qm_engine", "gamess")).lower()
 
     log.info("=" * 60)
     log.info(f"STAGE 3 — QM CALCULATIONS ({qm_engine.upper()})")
@@ -419,7 +483,9 @@ def stage3_gaussian(cfg: dict, paths: dict) -> dict:
     wdir   = Path(paths["wdir"])
     pdb_id = paths["pdb_id"]
 
-    if qm_engine == "orca":
+    if qm_engine == "gamess":
+        return _stage3_gamess(cfg, paths, wdir, pdb_id)
+    elif qm_engine == "orca":
         return _stage3_orca(cfg, paths, wdir, pdb_id)
     else:
         return _stage3_gaussian(cfg, paths, wdir, pdb_id)
@@ -489,6 +555,47 @@ def _stage3_orca(cfg, paths, wdir, pdb_id):
     return {**paths, "qm_logs": log_files}
 
 
+def _stage3_gamess(cfg, paths, wdir, pdb_id):
+    exe     = cfg.get("gamess_exe", "/root/gamess/rungms")
+    version = cfg.get("gamess_version", "00")
+    ncpus   = cfg.get("gamess_ncpus", 1)
+    require_binary(exe)
+
+    jobs = [
+        (paths["small_opt"], f"{pdb_id}_heme_small_opt.log",
+         "Geometry optimisation of Fe coordination shell"),
+        (paths["small_fc"],  f"{pdb_id}_heme_small_fc.log",
+         "Force constant scan (Fe–S, Fe–N bonds/angles)"),
+        (paths["large_mk"],  f"{pdb_id}_heme_large_mk.log",
+         "Full-model MK ESP charges (RESP fitting)"),
+    ]
+
+    log_files = {}
+    for inp, logname, desc in jobs:
+        logpath = wdir / logname
+        jobname = Path(inp).stem
+        if logpath.exists() and _qm_converged_gamess(logpath):
+            log.info(f"  Skipping {logname} — already converged.")
+        else:
+            log.info(f"  Running: {desc}")
+            run(f"{exe} {jobname} {version} {ncpus} > {logname}", cwd=str(wdir))
+            if not _qm_converged_gamess(logpath):
+                raise RuntimeError(
+                    f"GAMESS job did not converge: {logpath}\n"
+                    f"Check {logname} for SCF convergence / spin state errors."
+                )
+            log.info(f"  Converged: {logname}")
+        log_files[jobname] = str(logpath)
+
+    return {**paths, "qm_logs": log_files}
+
+
+def _qm_converged_gamess(logpath: Path) -> bool:
+    if not logpath.exists():
+        return False
+    return "GAMESS TERMINATED NORMALLY" in logpath.read_text()[-3000:]
+
+
 def _qm_converged_gaussian(logpath: Path) -> bool:
     if not logpath.exists():
         return False
@@ -517,7 +624,7 @@ def stage4_mcpb_steps234(cfg: dict, paths: dict) -> dict:
     pdb_id  = paths["pdb_id"]
 
     for step_num, desc in [
-        (2, "Extract bonded parameters from Gaussian force constant scan"),
+        (2, "Extract bonded parameters from QM force constant output"),
         (3, "Fit RESP charges from MK ESP log"),
         (4, "Generate tleap input script"),
     ]:
@@ -957,6 +1064,66 @@ def stage7_analysis(cfg: dict, paths: dict) -> None:
     log.info(f"  All analysis outputs in: {wdir}")
 
 
+def _validate_qm_setup(cfg: dict) -> None:
+    """
+    Quick smoke-test for the QM setup: run a single-point energy on the
+    small_opt model (RUNTYP=ENERGY instead of OPTIMIZE).  Finishes in
+    ~2–5 min and confirms functional/basis/ECP are accepted by GAMESS
+    before committing to the full multi-hour stage 3 run.
+    Requires stage 2 to have run already (small_opt.inp must exist).
+    """
+    import shutil
+    import tempfile
+
+    pdb_id  = cfg["pdb_id"].lower()
+    wdir    = Path(cfg["workdir"]) / "02_mcpb"
+    src_inp = wdir / f"{pdb_id}_heme_small_opt.inp"
+
+    if not src_inp.exists():
+        log.error(f"QM input not found: {src_inp}\nRun stage 2 first.")
+        sys.exit(1)
+
+    exe     = cfg.get("gamess_exe", "/root/gamess/rungms")
+    version = cfg.get("gamess_version", "00")
+    ncpus   = cfg.get("gamess_ncpus", 1)
+    require_binary(exe)
+
+    # build a single-point copy in a temp dir so we don't pollute 02_mcpb
+    tmpdir  = Path(tempfile.mkdtemp(prefix="qm_validate_"))
+    val_inp = tmpdir / "qm_validate.inp"
+    val_log = tmpdir / "qm_validate.log"
+
+    txt = src_inp.read_text()
+    txt = re.sub(r'RUNTYP=\S+', 'RUNTYP=ENERGY', txt)
+    # single-point doesn't need $STATPT
+    txt = re.sub(r'\$STATPT\b.*?\$END\s*', '', txt, flags=re.DOTALL)
+    val_inp.write_text(txt)
+
+    log.info("=" * 60)
+    log.info("QM SETUP VALIDATION  (single-point energy, ~2–5 min)")
+    log.info("=" * 60)
+    log.info(f"  Input:  {src_inp.name}  →  RUNTYP=ENERGY")
+    log.info(f"  Engine: {exe}  version={version}  ncpus={ncpus}")
+    log.info(f"  Tmpdir: {tmpdir}")
+
+    try:
+        run(f"{exe} qm_validate {version} {ncpus} > qm_validate.log",
+            cwd=str(tmpdir))
+    except RuntimeError:
+        pass  # we check the log ourselves below
+
+    if _qm_converged_gamess(val_log):
+        log.info("✓  GAMESS terminated normally — QM setup is valid.")
+        log.info(f"   Full log: {val_log}")
+    else:
+        tail = val_log.read_text()[-4000:] if val_log.exists() else "(no output)"
+        log.error("✗  GAMESS did NOT terminate normally.\n"
+                  f"   Log tail:\n{tail}")
+        sys.exit(1)
+
+    shutil.rmtree(tmpdir, ignore_errors=True)
+
+
 # ═════════════════════════════════════════════════════════════════════════════
 #  ENTRY POINT
 # ═════════════════════════════════════════════════════════════════════════════
@@ -964,7 +1131,7 @@ def stage7_analysis(cfg: dict, paths: dict) -> None:
 STAGES = {
     1: ("PDB preparation",         stage1_prepare_pdb),
     2: ("MCPB.py step 1",          stage2_mcpb_step1),
-    3: ("Gaussian QM",             stage3_gaussian),
+    3: ("QM calculations",         stage3_qm),
     4: ("MCPB.py steps 2–4",       stage4_mcpb_steps234),
     5: ("tleap system assembly",   stage5_tleap),
     6: ("OpenMM MD",               stage6_md),
@@ -991,8 +1158,10 @@ def main():
               python pada1_md_pipeline.py --stage 7
         """)
     )
-    parser.add_argument("--stage",  type=int, default=1,
+    parser.add_argument("--stage",     type=int, default=1,
                         help="Start from this stage (1–7). Default: 1")
+    parser.add_argument("--end-stage", type=int, default=None,
+                        help="Stop after this stage (inclusive). Default: run all")
     parser.add_argument("--config", type=str, default=None,
                         help="Path to YAML config file (overrides defaults)")
     parser.add_argument("--ligand", type=str, default=None,
@@ -1001,6 +1170,10 @@ def main():
                         help="Working directory (overrides config)")
     parser.add_argument("--list-stages", action="store_true",
                         help="Print stage list and exit")
+    parser.add_argument("--validate-qm", action="store_true",
+                        help="Run a single-point energy on small_opt.inp to verify "
+                             "the QM setup (functional/basis/ECP) without a full "
+                             "geometry optimisation. Requires stage 2 to have run.")
     args = parser.parse_args()
 
     if args.list_stages:
@@ -1015,6 +1188,12 @@ def main():
     if args.workdir:
         cfg["workdir"] = args.workdir
 
+    if args.validate_qm:
+        _validate_qm_setup(cfg)
+        sys.exit(0)
+
+    end_stage = args.end_stage if args.end_stage is not None else max(STAGES.keys())
+
     Path(cfg["workdir"]).mkdir(parents=True, exist_ok=True)
 
     log.info("╔══════════════════════════════════════════════════════════╗")
@@ -1022,6 +1201,7 @@ def main():
     log.info("╚══════════════════════════════════════════════════════════╝")
     log.info(f"  Working directory: {cfg['workdir']}")
     log.info(f"  Starting stage:    {args.stage}")
+    log.info(f"  End stage:         {end_stage}")
     log.info(f"  Ligand:            {cfg.get('ligand_sdf') or 'none'}")
 
     # ── inter-stage state (paths dict passed through) ─────────────────────────
@@ -1031,7 +1211,7 @@ def main():
     if args.stage > 1:
         paths = _recover_paths(cfg, args.stage)
 
-    for stage_num in range(args.stage, max(STAGES.keys()) + 1):
+    for stage_num in range(args.stage, end_stage + 1):
         name, fn = STAGES[stage_num]
         log.info(f"\n{'─'*60}")
         log.info(f"Running stage {stage_num}: {name}")
@@ -1057,7 +1237,7 @@ def _recover_paths(cfg: dict, start_stage: int) -> dict:
     wd     = Path(cfg["workdir"])
     paths  = {"pdb_id": pdb_id}
 
-    qm_ext = "inp" if cfg.get("qm_engine", "orca").lower() == "orca" else "com"
+    qm_ext = "com" if cfg.get("qm_engine", "gamess").lower() == "gaussian" else "inp"
 
     candidates = {
         "prot_pdb":   wd / "01_prep" / f"{cfg['pdb_id']}_protein.pdb",

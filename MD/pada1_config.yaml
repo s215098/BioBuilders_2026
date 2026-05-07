@@ -19,11 +19,13 @@ mcpb_ff:      "ff14SB"
 mcpb_gaff:    "gaff2"
 
 # ── QM engine ────────────────────────────────────────────────────────────────
-qm_engine:      "orca"    # "orca" (free, academic) or "gaussian"
-orca_exe:       "/root/orca_6_1_1/orca"
-orca_nproc:     4         # parallel cores for ORCA %pal
-orca_mem_mb:    4000      # MB per core for ORCA %maxcore
-gaussian_exe:   "g16"     # used only if qm_engine = "gaussian"
+qm_engine:      "gamess"
+qm_method:      "pbe0_def2svp"   # PBE0/SPK-DZP + SBK frozen-core ECP on Fe
+gamess_exe:     "/path/to/hpc/rungms"   # ← update to HPC rungms path
+gamess_version: "00"
+gamess_ncpus:   16               # 16 DDI processes on HPC node
+gamess_mwords:  2000             # 16 GB local memory per process (16 × 2000 MW = 256 GB)
+gamess_memddi:  16000            # 128 GB distributed DDI pool across 16 processes
 gaussian_nproc: 8
 gaussian_mem:   "16GB"
 spin_mult:      6         # ferric high-spin (S=5/2): 2S+1 = 6   ← DO NOT CHANGE

@@ -3,5 +3,36 @@
 .DS_Store
 **/.DS_Store
 
+# Windows metadata (WSL downloads)
+*.Zone.Identifier
+*:Zone.Identifier
+
+# Claude Code settings (local only)
+.claude/
+
 # Streamlit
 .streamlit/secrets.toml
+
+# Python
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+**/.pytest_cache/
+
+# MD pipeline — generated outputs (re-created by running the pipeline)
+MD/pada1_md/
+MD/pada1_md_test/
+MD/*.zip
+MD/*.tar.gz
+
+# Large binaries — GAMESS and ORCA must be installed separately
+MD/gamess-current/
+MD/gamess-current.tar.gz
+MD/orca_*.run
+
+# IDE
+.vscode/
+**/.vscode/
+.idea/
