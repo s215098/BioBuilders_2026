@@ -22,8 +22,9 @@ Pipeline/
 ├── 03_Advanced_track/
 │   └── DeNovoDesign/                          — de novo enzyme design
 │
-├── MD/                                        — Full MD pipeline for PaDa-I UPO (5OXU)
-│   └── README.md                              ← start here for MD
+├── 02_Medium_track/molecular_dynamics/
+│   └── MCPB_gamess/                           — Full MD pipeline for PaDa-I UPO (5OXU)
+│       └── README.md                          ← start here for MD
 │
 ├── PerEnzyme/
 │   ├── UPOs/                                  — per-enzyme configs and results for UPOs
@@ -54,4 +55,4 @@ Pipeline/
 
 Each subdirectory has its own `README.md` with setup instructions. If you add new work, please add a short README to your folder explaining what's in there and how to run it.
 
-For the MD pipeline specifically: [`MD/README.md`](MD/README.md).
+For the MD pipeline specifically: [`02_Medium_track/molecular_dynamics/MCPB_gamess/README.md`](02_Medium_track/molecular_dynamics/MCPB_gamess/README.md).
