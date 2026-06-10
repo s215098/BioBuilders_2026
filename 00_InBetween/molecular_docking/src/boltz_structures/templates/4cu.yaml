@@ -1,0 +1,22 @@
+# Protein + 4 copper ions (Cu(II), CCD code CU). No substrate, no affinity.
+# Use for multicopper oxidases / laccases: structure-only pass that produces
+# holo PDBs ready for downstream Vina docking around T1/T2/T3.
+#
+# - For binuclear copper enzymes (tyrosinase, hemocyanin), delete D and E.
+# - For Cu(I) sites in reduced enzymes, change `ccd: CU` to `ccd: CU1`.
+sequences:
+  - protein:
+      id: A
+      sequence: "{seq}"
+  - ligand:
+      id: B
+      ccd: CU
+  - ligand:
+      id: C
+      ccd: CU
+  - ligand:
+      id: D
+      ccd: CU
+  - ligand:
+      id: E
+      ccd: CU
