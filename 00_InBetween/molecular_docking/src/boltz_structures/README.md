@@ -32,7 +32,7 @@ python -c "import torch; print('cuda ok:', torch.cuda.is_available())"
 ---
 
 ## 2. Run
-
+Rememeber to run SignalP on your fasta file, https://services.healthtech.dtu.dk/services/SignalP-6.0/ to remove the signal peptides.
 ```bash
 python boltz_template_batch.py \
     -f your_sequences.fasta \
