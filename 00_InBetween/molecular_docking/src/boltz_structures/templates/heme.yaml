@@ -1,0 +1,13 @@
+# Protein + heme b. Affinity head pointed at the heme.
+# Use for the "receptor-only" Boltz pass (gives you holo structures ready
+# for Vina docking of a separate substrate later).
+sequences:
+  - protein:
+      id: A
+      sequence: "{seq}"
+  - ligand:
+      id: B
+      ccd: HEM
+properties:
+  - affinity:
+      binder: B

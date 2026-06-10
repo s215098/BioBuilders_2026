@@ -1,0 +1,16 @@
+# Protein + heme + NNBT (N,N-bis(2-hydroxypropyl)-p-toluidine).
+# Affinity head pointed at the NNBT binder. Use for the NNBT-screening pass.
+# Replace the SMILES on ligand C if you want a different binder.
+sequences:
+  - protein:
+      id: A
+      sequence: "{seq}"
+  - ligand:
+      id: B
+      ccd: HEM
+  - ligand:
+      id: C
+      smiles: 'CC1=CC=C(C=C1)N(CC(C)O)CC(C)O'
+properties:
+  - affinity:
+      binder: C
