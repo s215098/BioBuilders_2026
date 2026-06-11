@@ -1,0 +1,26 @@
+Metadata-Version: 2.4
+Name: MutateX
+Version: 0.8
+Summary: scripts and utilities to automate FoldX runs
+Home-page: https://github.com/ELELAB/mutatex
+Author: Matteo Tiberti, Thilde Terkelsen, Tycho Canter Cremers
+Author-email: matteo.tiberti@gmail.com
+Keywords: foldx energy mutation
+License-File: LICENSE
+Requires-Dist: biopython
+Requires-Dist: matplotlib
+Requires-Dist: numpy
+Requires-Dist: pandas
+Requires-Dist: logomaker
+Requires-Dist: scipy
+Requires-Dist: six
+Requires-Dist: openpyxl
+Requires-Dist: pyyaml
+Requires-Dist: adjustText>=0.8
+Dynamic: author
+Dynamic: author-email
+Dynamic: home-page
+Dynamic: keywords
+Dynamic: license-file
+Dynamic: requires-dist
+Dynamic: summary

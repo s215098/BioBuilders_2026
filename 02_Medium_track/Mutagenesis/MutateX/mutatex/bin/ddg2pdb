@@ -1,0 +1,143 @@
+#!/usr/bin/env python
+
+#    ddg2pdb: write DDG MutateX results in the B-factor fields of PDB files
+#    Copyright (C) 2015, Matteo Tiberti <matteo.tiberti@gmail.com>
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+import argparse
+from Bio import PDB
+from six import iteritems
+from mutatex.utils import *
+import numpy as np
+import logging as log
+
+LOGFMT = "%(levelname)s: %(message)s"
+
+description='ddg2pdb: write MutateX DDGs in the B-factor field of PDB files'
+epilog='''ddg2pdb counts the number of mutants per mutation site that are within a
+given range of DDG, and writes this number in the B-factor field of the
+structure from the input PDB file. The range of accepted DDG values to be
+counted is controlled by options -T, -a and -b and specified as follows.
+
+Option -T accepts to value: "between" and "outside". When T is set to between
+the values between a low and high thresholds are considered. When T is set to
+outisde (default), the values below the low and above the low and high
+thresholds respectively are considered. The low threshold is specified using
+option -a, while the high threshold with -b. The default arguments for -a and -b
+are -99999 and 99999. Extremes are always included.
+
+For instance, these as some example combinations of options and the respective
+considered intervals:
+
+-a 0.5                      ]-inf,0.5] U [99999.0,+inf[
+-b 0.5                      ]-inf,-99999.0] U [0.5,+inf[
+-a 0.5 -b 1.0               ]-inf,0.5] U [1.0,+inf[
+-a 0.5 -b 1.0 -T between    [0.5,1.0]
+
+Option -o writes the modified PDB file, while option -m writes a NxN square
+matrix, where N is the number of residues of the PDB, that is zero everywhere
+except for the diagonal, in which the calculated values are written. This is the
+supported format of the xPyder PyMOL plugin'''
+
+parser = argparse.ArgumentParser(description=description, epilog=epilog, formatter_class=argparse.RawTextHelpFormatter)
+
+optional = parser._action_groups.pop()
+required = parser.add_argument_group('required arguments')
+
+required = init_arguments(['pdb', 'data', 'mutation_list'], required)
+optional = init_arguments(['multimers'], optional)
+
+optional.add_argument("-a","--lower-free-energy-threshold", dest="low_thres",  default=-99999.0, type=float, help="lower threhsold; default value: -99999.0")
+optional.add_argument("-b","--upper-free-energy-threshold", dest="high_thres", default= 99999.0, type=float, help="upper threhsold; default value: 99999.0")
+optional.add_argument("-T","--threshold-mode", dest='thres_mode', choices=['between','outside'], default='outside', action='store', help="threshold mode (see help)")
+
+optional.add_argument("-m","--matrix", dest="dat", default="ddgs.dat", help="output xPyder-compatible matrix file")
+optional.add_argument("-o","--output-pdb", dest="out_pdb", default="ddgs.pdb", help="output pdb file")
+
+optional = init_arguments(['verbose'], optional)
+
+parser._action_groups.append(optional)
+options = parser.parse_args()
+
+if options.verbose:
+    log.basicConfig(level=log.INFO,    format=LOGFMT)
+else:
+    log.basicConfig(level=log.WARNING, format=LOGFMT)
+
+try:
+    res_order = parse_mutlist_file(options.mutation_list)
+except IOError:
+    exit(1)
+
+res_ids = []
+
+try:
+    res_ids_str, structure = get_residue_list(options.in_pdb, multimers=options.multimers, get_structure=True)
+except IOError:
+    exit(1)
+
+models = structure.get_list()
+
+fnames = ["_".join(r) for r in res_ids_str]
+
+log.info("The following files will be considered: %s" % ", ".join(fnames))
+
+data = []
+
+if not options.high_thres and not options.low_thres:
+    log.error("Please provide a DDG cut-off (options -a, -b, -t). Exiting...")
+    exit(1)
+else:
+    log.info("Filtering will be performed.")
+    log.info("Low threshold: %.2f" % options.low_thres)
+    log.info("High threshold: %.2f"% options.high_thres)
+
+if options.thres_mode == 'outside':
+    log.info("Mode: outside. Only values >= %.2f OR values <= %.2f will be considered." % (options.high_thres, options.low_thres))
+elif options.thres_mode == 'between':
+    log.info("Mode: between. Only values between %.2f and %.2f (including extremes) will be considered." % (options.low_thres, options.high_thres))
+
+for i,r in enumerate(res_ids_str):
+    try:
+        tmp_data = np.array(parse_ddg_file("%s/%s" % (options.ddg_dir, fnames[i]), reslist=res_order))
+    except (IOError, TypeError):
+        exit(1)
+    if options.thres_mode == 'outside':
+        processed_data = np.sum(np.logical_or(tmp_data <= options.low_thres, tmp_data >= options.high_thres))
+    elif options.thres_mode == 'between':
+        processed_data = np.sum(np.logical_and(tmp_data <= options.high_thres, tmp_data >= options.low_thres))
+
+    for sr in r:
+        for model in structure:
+            for atom in model[sr[1]][int(sr[2:])]:
+                atom.set_bfactor(processed_data)
+
+for chain in structure[0]:
+    for residue in chain:
+        try:
+            data.append(residue['CA'].get_bfactor())
+        except KeyError:
+            pass
+
+data = np.array(data)
+
+mat = np.zeros((data.shape[0], data.shape[0]))
+np.fill_diagonal(mat, data)
+
+np.savetxt(options.dat, mat, fmt="%.1f")
+
+pdb_io = PDB.PDBIO()
+pdb_io.set_structure(structure)
+pdb_io.save(options.out_pdb)

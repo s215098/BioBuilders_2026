@@ -1,0 +1,4525 @@
+#LyX 2.4 created this file. For more info see https://www.lyx.org/
+\lyxformat 620
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass article
+\begin_preamble
+\usepackage{color}
+\usepackage{dirtree}
+\definecolor{lgray}{gray}{0.7}
+\date{}
+% Added by lyx2lyx
+\setlength{\parskip}{\smallskipamount}
+\setlength{\parindent}{0pt}
+\end_preamble
+\use_default_options true
+\maintain_unincluded_children no
+\language english
+\language_package default
+\inputencoding auto-legacy
+\fontencoding auto
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_roman_osf false
+\font_sans_osf false
+\font_typewriter_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\use_microtype false
+\use_dash_ligatures false
+\graphics default
+\default_output_format default
+\output_sync 1
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize a4
+\use_geometry false
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 1
+\use_formatted_ref 0
+\use_minted 0
+\use_lineno 0
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\is_math_indent 0
+\math_numbering_side default
+\quotes_style english
+\dynamic_quotes 0
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tablestyle default
+\listings_params "basicstyle={\small\ttfamily},framexleftmargin=5mm,frame=shadowbox,rulesepcolor={\color{lgray}}"
+\tracking_changes false
+\output_changes false
+\change_bars false
+\postpone_fragile_content false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\docbook_table_output 0
+\docbook_mathml_prefix 1
+\end_header
+
+\begin_body
+
+\begin_layout Title
+MutateX
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset toc
+LatexCommand tableofcontents
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Requirements and installation
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:Requirements-and-installation"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+MutateX is designed and tested to work on Linux and macOS.
+ We currently don't have the means to support Windows.
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+Important
+\series default
+:
+ running MutateX on WSL (Windows Subsystem for Linux) has been shown to not work correctly when using more than one core,
+ and it is therefore discouraged.
+ Unfortunately,
+ we currently cannot troubleshoot and test MutateX on WSL See issue #205 on the MutateX GitHub repository for more information.
+\end_layout
+
+\begin_layout Standard
+MutateX and the associated scripts are written in Python,
+ and requires having a working Python >= 3.7.
+ installation.
+ 
+\end_layout
+
+\begin_layout Standard
+A number of Python packages need also to be available.
+ More in details,
+ MutateX requires:
+\end_layout
+
+\begin_layout Itemize
+setuptools
+\end_layout
+
+\begin_layout Itemize
+biopython
+\end_layout
+
+\begin_layout Itemize
+matplotlib
+\end_layout
+
+\begin_layout Itemize
+numpy
+\end_layout
+
+\begin_layout Itemize
+scipy
+\end_layout
+
+\begin_layout Itemize
+six
+\end_layout
+
+\begin_layout Itemize
+openpyxl
+\end_layout
+
+\begin_layout Itemize
+pandas
+\end_layout
+
+\begin_layout Itemize
+logomaker
+\end_layout
+
+\begin_layout Itemize
+pyyaml
+\end_layout
+
+\begin_layout Itemize
+adjustTex >= 0.8
+\end_layout
+
+\begin_layout Standard
+All the mentioned packages are available for free for Linux and macOS.
+ Once these requirements have been satisfied,
+ MutateX needs to be installed as a standard Python package,
+ using the included setup.py file.
+\end_layout
+
+\begin_layout Standard
+Please follow detailed the installation instructions in the INSTALL file included with the distribution to install the software.
+\end_layout
+
+\begin_layout Standard
+Since MutateX works by running the FoldX software,
+ the FoldX binary and the associated rotabase.txt file should be available.
+ Please refer to the FoldX website ( http://http://foldx.crg.es ) to aquire it.
+\end_layout
+
+\begin_layout Subsection
+Supported FoldX versions
+\end_layout
+
+\begin_layout Standard
+MutateX supports FoldX Suite version 4 and 5.
+\end_layout
+
+\begin_layout Standard
+The distribution for version 4 includes a rotabase.txt file which si necessary for it to work;
+ however,
+ the FoldX Suite 5 binary generates its own rotabase file and it's not a requirement as such.
+ See section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "subsec:Required-files"
+plural "false"
+caps "false"
+noprefix "false"
+nolink "false"
+
+\end_inset
+
+ for details.
+\end_layout
+
+\begin_layout Section
+Running calculations with MutateX
+\end_layout
+
+\begin_layout Subsection
+The MutateX protocol
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:The-MutateX-protocol"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+MutateX uses FoldX to systematically calculate the difference in free energy of folding (
+\begin_inset Formula $\Delta\Delta G$
+\end_inset
+
+) between mutated variants and the wild-type using the FoldX BuildModel command.
+ More in details,
+ one or more protein models provided by the user are mutated sequentially by indipendently changing the residue at each position of the protein sequence to another aminoacid.
+ The list of residues that each position will be mutated to can be provided by the user,
+ or defaults to the list of 20 canonical aminoacids found in proteins.
+ For instance,
+ the user can provide a PDB file containing the structure of a 50-residues protein,
+ and demand each of them to be changed to ALA,
+ PHE and ASP.
+ In this case,
+ 150 (50*3) FoldX runs will be performed and the FoldX 
+\begin_inset Formula $\Delta\Delta G$
+\end_inset
+
+ value calculated for each of them.
+ Similarly,
+ if more than two protein chains are provided,
+ MutateX can calculate the change of free energy of interaction upon mutation for all the tested mutations,
+ if requested.
+ Note that MutateX also allows performing partial mutational scans,
+ in which only few positions at a time are considered.
+ The protocol followed by MutateX can be summarized as follows:
+\end_layout
+
+\begin_layout Enumerate
+Load and check the structure(s).
+ One (or more) PDB file containing one (or more) models may be employed.
+ See 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "subsec:Phase-0:-Preliminary"
+plural "false"
+caps "false"
+noprefix "false"
+nolink "false"
+
+\end_inset
+
+ for details.
+\end_layout
+
+\begin_layout Enumerate
+Repair.
+ Each model is subject to a Repair run in which residues having bad torsion angles,
+ Van der Waals clashes or bad total energy are modified to more reasonable conformations.
+ This uses the RepairPDB command of FoldX.
+ 
+\end_layout
+
+\begin_layout Enumerate
+Mutate.
+ Each residue at every position is indipendently is mutated to a number of selected aminoacids as previously detailed,
+ and 
+\begin_inset Formula $\Delta\Delta G$
+\end_inset
+
+ values are calculated.
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+Optional:
+ calculate 
+\begin_inset Formula $\Delta\Delta G$
+\end_inset
+
+ of interaction between protein chains upon mutation,
+ using the AnalyseComplex command.
+\end_layout
+
+\end_deeper
+\begin_layout Enumerate
+Report.
+ The 
+\begin_inset Formula $\Delta\Delta G$
+\end_inset
+
+ are gathered in a user-friendly collection of text files.
+ Also,
+ 
+\begin_inset Formula $\Delta\Delta G$
+\end_inset
+
+ values are averaged among the mutations calculated on different models and the values are reported.
+\end_layout
+
+\begin_layout Subsection
+Required files
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:Required-files"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The following files are required for a MutateX run:
+\end_layout
+
+\begin_layout Itemize
+By default,
+ MutateX reads the content of the FOLDX_BINARY and FOLDX_ROTABASE system variables in order to determine their location (see Section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:Requirements-and-installation"
+plural "false"
+caps "false"
+noprefix "false"
+nolink "false"
+
+\end_inset
+
+ for details).
+ If any of those variables is empty,
+ the location of the respective file can be supplied through the –foldx-binary or –rotabase command line options,
+ respectively.
+ If the command line options are supplied the content of the system variables is ignored.
+ Notice that the rotabase file is a requirement for FoldX Suite 4 but not for FoldX suite 5,
+ namely:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+If you're using FoldX 4 the rotabase file needs to be supplied as described
+\end_layout
+
+\begin_layout Itemize
+If you're using FoldX 5,
+ there's no need to supply a rotabase file as the software will generate one automatically when it's not present.
+ However,
+ if a rotabase file is specified in any of the options above,
+ the custom rotabase file will be used instead
+\end_layout
+
+\begin_layout Itemize
+You should make MutateX aware of the version you intend to use by using the –foldx-version option,
+ specifying either suite4 or suite5 accordingly
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+One (or more) PDB file,
+ containing one (or more) models of the protein to be mutated.
+ The PDB files need to adhere to the following guidelines:
+\begin_inset Separator latexpar
+\end_inset
+
+
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+The models should all have the same sequence.
+ If this not the case,
+ MutateX will detect the problem and exit after repair
+\end_layout
+
+\begin_layout Itemize
+The chain identifier should be provided for all the chains of all the models.
+ This is especially important if the supplied models have more than one chain
+\end_layout
+
+\begin_layout Itemize
+The PDB file should contain exclusively residues recognized by FoldX.
+ See http://foldxsuite.crg.eu/allowed-residues for a complete list.
+ Also notice that residues (even those with post-translational modifications such as phosphorilated residues) should be defined as whole residues under a single residues identifier.
+ For instance,
+ phosphorylated residues where the phosphate group is separated from the residue and defined as HETATM at the end of the PDB may not be recognized correctly.
+\end_layout
+
+\begin_layout Itemize
+The number of residues or atoms should monotonically increase progressing along the molecule (e.g.,
+ the first four residues of a chain should follow the order 1-2-3-4,
+ and 1-3-2-4 is not ammissible.
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+Two template files:
+ one for the repair and one for the mutation runs.
+ These should be named,
+ respectively,
+ repair_runfile_template.txt and mutate_runfile_template.txt.
+ MutateX looks for these files in the working directory (i.e.
+ where it is run).
+ Nonetheless,
+ it is also possible to specify custom filenames or locations using the –repair-runfile-template and –mutate-runfile-template options.
+ Two examples of these template files are available within the MutateX package.
+ These are normal FoldX RunFiles that perform a PDBRepair and BuildModel respectively,
+ except for two details.
+ In the two files,
+ one 
+\begin_inset Quotes eld
+\end_inset
+
+$PDBS$
+\begin_inset Quotes erd
+\end_inset
+
+ and one 
+\begin_inset Quotes eld
+\end_inset
+
+$NRUNS$
+\begin_inset Quotes erd
+\end_inset
+
+ strings are present.
+ These have to remain as such for MutateX to work correctly (i.e.
+ the user should not modify the respective lines).
+ Nonetheless,
+ the user is free to modify all the other options as fit for the task at hand.
+ If the 
+\begin_inset Formula $\Delta\Delta G$
+\end_inset
+
+ of interaction needs to be calculated,
+ a third template file needs to be provided,
+ either for protein complex or complex with DNA.
+ Examples for template files are available with the MutateX distribution.
+\end_layout
+
+\begin_layout Itemize
+Optionally,
+ one mutations list file (usually named mutations_list.txt).
+ This file specifies the ordered list of residue types that each residue of the input models should mutated to in order to calculate the values of 
+\begin_inset Formula $\Delta\Delta G$
+\end_inset
+
+ (see section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "subsec:The-MutateX-protocol"
+nolink "false"
+
+\end_inset
+
+ for details).
+ The same order is also used in the output of the reporting of 
+\begin_inset Formula $\Delta\Delta G$
+\end_inset
+
+.
+ The file is a list of canonical aminoacids specified in the single-letter code,
+ one per line.
+ Each line should begin with the single-letter specifying the aminoacid type,
+ and all the other characters are not considered.
+ For instance,
+ one could use:
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+A
+\end_layout
+
+\begin_layout Plain Layout
+
+C
+\end_layout
+
+\begin_layout Plain Layout
+
+D
+\end_layout
+
+\begin_layout Plain Layout
+
+E
+\end_layout
+
+\end_inset
+
+as well as
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+A (Alanine)
+\end_layout
+
+\begin_layout Plain Layout
+
+C (Cysteine)
+\end_layout
+
+\begin_layout Plain Layout
+
+D (Aspartate)
+\end_layout
+
+\begin_layout Plain Layout
+
+E (Glutamate)
+\end_layout
+
+\end_inset
+
+
+\series bold
+only the first letter matters
+\series default
+.
+ Be careful:
+ this means that a mutations list file like
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+ALA
+\end_layout
+
+\begin_layout Plain Layout
+
+CYS
+\end_layout
+
+\begin_layout Plain Layout
+
+ASP
+\end_layout
+
+\begin_layout Plain Layout
+
+GLU
+\end_layout
+
+\end_inset
+
+would be the same as
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+A (Ala)
+\end_layout
+
+\begin_layout Plain Layout
+
+C (Cys)
+\end_layout
+
+\begin_layout Plain Layout
+
+A (Ala)
+\end_layout
+
+\begin_layout Plain Layout
+
+G (Gly)
+\end_layout
+
+\end_inset
+
+The mutation list file is provided by the user using the –mutlist command line option.
+ If this option is not specified,
+ the default mutation list will be used,
+ which is:
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+G
+\end_layout
+
+\begin_layout Plain Layout
+
+A
+\end_layout
+
+\begin_layout Plain Layout
+
+V
+\end_layout
+
+\begin_layout Plain Layout
+
+L
+\end_layout
+
+\begin_layout Plain Layout
+
+I
+\end_layout
+
+\begin_layout Plain Layout
+
+M
+\end_layout
+
+\begin_layout Plain Layout
+
+F
+\end_layout
+
+\begin_layout Plain Layout
+
+W
+\end_layout
+
+\begin_layout Plain Layout
+
+P
+\end_layout
+
+\begin_layout Plain Layout
+
+S
+\end_layout
+
+\begin_layout Plain Layout
+
+T
+\end_layout
+
+\begin_layout Plain Layout
+
+C
+\end_layout
+
+\begin_layout Plain Layout
+
+Y
+\end_layout
+
+\begin_layout Plain Layout
+
+N
+\end_layout
+
+\begin_layout Plain Layout
+
+Q
+\end_layout
+
+\begin_layout Plain Layout
+
+D
+\end_layout
+
+\begin_layout Plain Layout
+
+E
+\end_layout
+
+\begin_layout Plain Layout
+
+K
+\end_layout
+
+\begin_layout Plain Layout
+
+R
+\end_layout
+
+\begin_layout Plain Layout
+
+H 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Supported residue types
+\end_layout
+
+\begin_layout Standard
+MutateX supports all protein residue types supported by FoldX as detailed in their user guide (see 
+\begin_inset CommandInset href
+LatexCommand href
+target "http://foldxsuite.crg.eu/allowed-residues"
+
+\end_inset
+
+).
+ In particular,
+ MutateX considers all 20 natural aminoacid types plus a few post-translationally modified residues and specific tautomeric states for histidine.
+ These are treated exactly in the same way as natural amino acids.
+ 
+\end_layout
+
+\begin_layout Standard
+In user-defined mutation list files (see section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "subsec:Required-files"
+plural "false"
+caps "false"
+noprefix "false"
+nolink "false"
+
+\end_inset
+
+) and in default plot labels the natural aminoacid types are represented by their respective single-letter code,
+ while post-translationally modified amino acids are represented by lowercase letters,
+ as detailed in table 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "ptm-table"
+plural "false"
+caps "false"
+noprefix "false"
+nolink "false"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float table
+placement document
+alignment document
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Tabular
+<lyxtabular version="3" rows="12" columns="3">
+<features tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+PTM'd aminoacid
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+FoldX/MutateX single letter code
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Residue name in PDB
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Phophorylated threonine
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+p
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+TPO
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Phosphorylated tyrosine
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+y
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+PTR
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Phosphorylated serine
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+s
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+SEP
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Hydroxiproline
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+h
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+HYP
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Sulfortyrosine
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+z
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+TYS
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Monomethylated lysine
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+k
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+MLZ
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Dimethylated lisine
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+m
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+MLY
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Trimethylated lisine
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+l
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+M3L
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Charged ND1 histidine
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+o
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+H1S
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Charged NE2 histidine
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+e
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+H2S
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Neutral histidine
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+f
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+H3S
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+supported post-translationally modified residues
+\end_layout
+
+\end_inset
+
+
+\begin_inset CommandInset label
+LatexCommand label
+name "ptm-table"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Running MutateX
+\end_layout
+
+\begin_layout Subsubsection
+Basic usage
+\end_layout
+
+\begin_layout Standard
+If everything is set up as described in sections 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "sec:Requirements-and-installation"
+plural "false"
+caps "false"
+noprefix "false"
+nolink "false"
+
+\end_inset
+
+ and 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "subsec:Required-files"
+nolink "false"
+
+\end_inset
+
+,
+ the simplest MutateX command is simply:
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+mutatex single_model.pdb
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+More than one file may be supplied at once:
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+mutatex single_model1.pdb single_model2.pdb
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Please notice that each PDB file is required to contain only one model,
+ and MutateX will complain and exit if this not the case.
+ This is because we require the user to acknowledge that he is using multi-model files,
+ and that all the models in the provided PDB file will be used.
+ This is performed by adding an option to the command:
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+mutatex single_model1.pdb multiple_models.pdb --multiple-models
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+If you have a multi-core machine (as you most probably do) you can greatly shorten the calculation times by allowing MutateX to run more than one instance of FoldX at the same time,
+ using option –np,
+ which specifies the number of FoldX processes to be run at the same time:
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+mutatex single_model.pdb --np 4
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+You can also specify a customized mutation list file:
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+mutatex single_model.pdb --np 4 --mutlist mutations_list.txt
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+Other options
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:Other-options"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+In this section,
+ several options available in MutateX are described.
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+--nruns NRUNS
+\end_layout
+
+\end_inset
+
+This is the number of mutation runs to be performed by MutateX per position and residue type of mutation.
+ This is important since for each run the algorithm might explore different conformations for mutagenesis.
+ As to keep the FoldX run as informative as possible,
+ we have decided to set this value to 5 by default.
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+--foldx-version {suite4,
+ suite5}
+\end_layout
+
+\end_inset
+
+This option is used to tell MutateX which FoldX version it should expect.
+ Right now,
+ FoldX Suite 4 or 5 are supported.
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+--verbose
+\end_layout
+
+\end_inset
+
+Activate verbose mode,
+ off by default.
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+--foldx-log
+\end_layout
+
+\end_inset
+
+Write the standard output of the FoldX runs to a log file in the run directories.
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+--binding-interface
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+If more than two chains are present,
+ calculate difference of free energy of interaction
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+--clean {partial,deep,none}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Clean the directories where runs are performed,
+ after performing them.
+ 
+\begin_inset Quotes eld
+\end_inset
+
+none
+\begin_inset Quotes erd
+\end_inset
+
+ performs no cleaning.
+ Partial removes all the generated PDB files.
+ Deep removes all files except for the fxout result files.
+ Default is partial.
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+--compress
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Compress mutations folder after the run is over
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+--no-multimers
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+By default,
+ if more than one protein chain is present,
+ MutateX automatically identifies if two protein chains have the same amino acid sequence and numbering.
+ In that case they are considered multimers.
+ This means that all the chains with the same sequence will be mutated at the same time,
+ in order to simulate a multimer of mutants.
+ By using this option,
+ multimers won't be considered and all chains will be mutated independently.
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+--poslist
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+MutateX supports partial mutational scans if requested.
+ This is possible by providing a list of desired positions in a text file,
+ one per line.
+ Positions must be defined exactly in the same format as the output files under the 
+\begin_inset Quotes eld
+\end_inset
+
+results
+\begin_inset Quotes erd
+\end_inset
+
+ folder,
+ so [One-letter wild-type residue type][Chain ID][Residue number].
+ If multimer mode is on,
+ you just need to specificy one residue of a multi-chain complex to select the corresponding set of residues in all the chains.
+ For instance,
+ if you only specify AA35 and AB35 is also available,
+ both will be mutated.
+ Likewise,
+ you can use the MutateX file name syntax and ask for AA35_AB35.
+ A position list file could look something like this:
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+CA2
+\end_layout
+
+\begin_layout Plain Layout
+
+WA4
+\end_layout
+
+\begin_layout Plain Layout
+
+DB8
+\end_layout
+
+\begin_layout Plain Layout
+
+CA2_CB2
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Plotting tools (see below) also support partial scans through a specific option.
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+--self-mutate
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Turns on self-mutation mode.
+ When this option is used,
+ the mutation list (either provided by the user or the default one) is ignored.
+ Instead,
+ each residue is mutated to the type it already has,
+ using templates and options as per a normal mutational scan.
+ This is intended as a sanity check fo the original repaired structure - if the free energy differences are significant when mutating a residue to itself,
+ it's possible it hasn't been properly optimized during repair and we should be careful in interpreting the results for that residue.
+ The runs are performed in a folder called selfmutations,
+ while results are available in the selfmutation_results folder.
+ The results are available as a table in which,
+ for each residue,
+ the maximum,
+ minimum,
+ average and standard deviation of self-mutation free energy difference are reported,
+ calculated over FoldX multiple runs.
+ This is performed both for stability and interaction energy,
+ if requested.
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+--skip-repair
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+When this option is used,
+ the repair phase is not performed on the input models and the original PDB files are used instead.
+ The calculation proceeds are requested fo the rest.
+\end_layout
+
+\begin_layout Subsection
+Interrupting and restarting a MutateX run
+\end_layout
+
+\begin_layout Standard
+In order to interrupt a MutateX run just kill the MutateX script right away.
+\end_layout
+
+\begin_layout Standard
+If a MutateX run is interrupted,
+ you don't have to repeat it from scratch.
+ Just enter the directory where the job was running and launch 
+\emph on
+the very same
+\emph default
+ MutateX command line (therefore,
+ it is advisable to save it as a script that will be used to run the program).
+ MutateX will automatically understand what has been already done and what's missing,
+ and will restart from where he had left.
+ Be careful though;
+ you shouldn't modify any of the input our outpur file of FoldX for the restart to work as expected.
+ FoldX is able to recognize certain inconsistencies between the available input and the available finished FoldX runs,
+ but mostly expects that the same command with same input has been issued.
+\end_layout
+
+\begin_layout Standard
+The fact that MutateX supports smart restarting means that you should 
+\emph on
+never run two different MutateX calculations in the same working directory
+\emph default
+.
+\end_layout
+
+\begin_layout Section
+MutateX Output
+\end_layout
+
+\begin_layout Standard
+MutateX automatically prepares the FoldX runs necessary for the completion of the complete mutation scan,
+ meaning that it writes a number of directories and files on disk.
+ By default,
+ the four FoldX phases (as described in section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "subsec:The-MutateX-protocol"
+nolink "false"
+
+\end_inset
+
+) are run one after the other,
+ as each of the requires the output of the previous phase.
+\end_layout
+
+\begin_layout Standard
+From this moment on,
+ each phase will be illustrated using as example a generic PDB named 
+\begin_inset Quotes eld
+\end_inset
+
+structure.pdb
+\begin_inset Quotes erd
+\end_inset
+
+ as example.
+ This generic PDB file contains a single model containing a single chain (
+\begin_inset Quotes eld
+\end_inset
+
+A
+\begin_inset Quotes erd
+\end_inset
+
+) with six residues having a specific protein sequence (MATELE),
+ and residues having residue number from 1 to 6.
+\end_layout
+
+\begin_layout Standard
+In the following description,
+ we will often refer to the 
+\begin_inset Quotes eld
+\end_inset
+
+current working directory
+\begin_inset Quotes erd
+\end_inset
+
+:
+ this is the directory in which the input files are present and from which MutateX has been launched.
+ It will be also referred as CWD for convenience.
+\end_layout
+
+\begin_layout Subsection
+Phase 1:
+ Preliminary operations and model check
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:Phase-0:-Preliminary"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+MutateX first reads the PDB file(s) it will work on and checks it can be read correctly.
+ If this is the case,
+ and if the PDB file contains a single model,
+ it is used as such,
+ while the program exits with an error if the PDB contains multiple models.
+ If option -a is provided,
+ however,
+ any multi-model PDB file is split into one PDB file per model and all models are considered.
+ This is done to ensure that the user is fully aware of the fact that they are using multiple models.
+ A further check is performed after phase 2 (Repair) to ensure that all the PDB files under consideration have exactly the same primary sequence.
+\end_layout
+
+\begin_layout Subsection
+Phase 2:
+ Repair
+\end_layout
+
+\begin_layout Standard
+On each of the models saved as single PDB files in the previous section,
+ a FoldX Repair run is performed,
+ following the protocol detailed in the template file provided by the user.
+ FoldX creates the 
+\begin_inset Quotes eld
+\end_inset
+
+repair
+\begin_inset Quotes erd
+\end_inset
+
+ directory,
+ and each repair run is performed inside a subdirectory of such directory.
+ For instance,
+ in our example there would be only one repair directory under the 
+\begin_inset Quotes eld
+\end_inset
+
+repair
+\begin_inset Quotes erd
+\end_inset
+
+ one,
+ which is named 
+\begin_inset Quotes eld
+\end_inset
+
+repair_structure_model0_checked
+\begin_inset Quotes erd
+\end_inset
+
+.
+ Inside it,
+ MutateX writes all the files that are necessary for the run and executes it automatically.
+\end_layout
+
+\begin_layout Standard
+For instance,
+ the following directory structure has to expected in our example:
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+dirtree{% 
+\end_layout
+
+\begin_layout Plain Layout
+
+ .1 CWD.
+\end_layout
+
+\begin_layout Plain Layout
+
+ .2 repair.
+ 
+\end_layout
+
+\begin_layout Plain Layout
+
+ .3 repair
+\backslash
+_structure
+\backslash
+_model0
+\backslash
+_checked.
+ 
+\end_layout
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Phase 3:
+ Mutate
+\end_layout
+
+\begin_layout Standard
+In this phase,
+ the mutation runs are performed.
+ A 
+\begin_inset Quotes eld
+\end_inset
+
+mutations
+\begin_inset Quotes erd
+\end_inset
+
+ directory is first created,
+ under the CWD.
+ Inside of it,
+ a directory is created for every repair run which was succesfully completed in the previous phase.
+ The directory name will derive from the output files written by FoldX in the repair runs - in our example,
+ that would be 
+\begin_inset Quotes eld
+\end_inset
+
+RepairPDB_structure_model0_checked
+\begin_inset Quotes erd
+\end_inset
+
+.
+ Finally,
+ inside of these directories,
+ several directories will be present,
+ each corresponding to a protein residue and each containing a complete mutation runs.
+ The naming of these directory will follow this convention:
+ [Single-letter residue type of the wild-type residue][chain name][residue number].
+ For instance,
+ the following directory structure has to expected in our example:
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+dirtree{% 
+\end_layout
+
+\begin_layout Plain Layout
+
+ .1 CWD.
+\end_layout
+
+\begin_layout Plain Layout
+
+ .2 mutations.
+ 
+\end_layout
+
+\begin_layout Plain Layout
+
+ .3 structure
+\backslash
+_model0
+\backslash
+_checked
+\backslash
+_Repair.
+ 
+\end_layout
+
+\begin_layout Plain Layout
+
+ .4 MA1.
+\end_layout
+
+\begin_layout Plain Layout
+
+ .4 AA2.
+ 
+\end_layout
+
+\begin_layout Plain Layout
+
+ .4 TA3.
+ 
+\end_layout
+
+\begin_layout Plain Layout
+
+ .4 EA4.
+ 
+\end_layout
+
+\begin_layout Plain Layout
+
+ .4 LA5.
+ 
+\end_layout
+
+\begin_layout Plain Layout
+
+ .4 EA6.
+ 
+\end_layout
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+Optional:
+ Free energy of interaction
+\end_layout
+
+\begin_layout Standard
+If the calculation of free energy of interaction has been requested,
+ this is performed directly in the mutations directories.
+\end_layout
+
+\begin_layout Subsection
+Phase 4:
+ Report
+\end_layout
+
+\begin_layout Standard
+After running all the mutations runs as detailed in Phase 3,
+ the values of 
+\begin_inset Formula $\Delta\Delta G$
+\end_inset
+
+ gathered from the mutation runs are written in text files.
+ This happens in the 
+\begin_inset Quotes eld
+\end_inset
+
+results
+\begin_inset Quotes erd
+\end_inset
+
+ directory under CWD.
+ Inside this,
+ one directory per model used is found,
+ and each of them contains several text files,
+ named as mutation directories in the Mutate phase.
+ Each of them contains a list of 
+\begin_inset Formula $\Delta\Delta G$
+\end_inset
+
+ values (in kcal/mol),
+ one for each residue type specified in the mutation_list.txt (or the default list if a file has not been specified) and in the same order.
+ These values are the average of the N FoldX run that have been carried out for each mutation,
+ as specified by the –nruns command line option (see section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "subsec:Other-options"
+nolink "false"
+
+\end_inset
+
+).
+\end_layout
+
+\begin_layout Standard
+Finally,
+ inside the 
+\begin_inset Quotes eld
+\end_inset
+
+results
+\begin_inset Quotes erd
+\end_inset
+
+ diretory,
+ a final_averages directory will also be present.
+ This contains a number of text file,
+ in the same exact format as the different result directories each referring to a single model.
+ The values written in the files,
+ however,
+ represent the average 
+\begin_inset Formula $\Delta\Delta G$
+\end_inset
+
+ across all the models analyzed.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+dirtree{% 
+\end_layout
+
+\begin_layout Plain Layout
+
+ .1 CWD.
+\end_layout
+
+\begin_layout Plain Layout
+
+ .2 results.
+ 
+\end_layout
+
+\begin_layout Plain Layout
+
+ .3 mutation
+\backslash
+_ddgs.
+\end_layout
+
+\begin_layout Plain Layout
+
+ .4 structure
+\backslash
+_model0
+\backslash
+_checked
+\backslash
+_Repair.
+ 
+\end_layout
+
+\begin_layout Plain Layout
+
+ .4 final
+\backslash
+_averages.
+ 
+\end_layout
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+Optional:
+ Free energy of interaction
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:Optional:-Free-energy"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+MutateX supports calculating changes of free energy of interaction either between every protein chain in the input PDB file or between every protein chain and DNA.
+ Switching between the two modes is done by using different template files,
+ 
+\begin_inset Quotes eld
+\end_inset
+
+interface_runfile_template.txt
+\begin_inset Quotes erd
+\end_inset
+
+ for protein-protein interaction and 
+\begin_inset Quotes eld
+\end_inset
+
+interface_DNA_runfile_template.txt
+\begin_inset Quotes erd
+\end_inset
+
+ for protein-DNA interaction.
+ Both of them are available in the template folder.
+ If the calculation of free energy of interaction has been requested,
+ the corresponding changes in free energy are stored similarly as in the mutations results directory,
+ however in a different position.
+ If the interaction is between two protein chains,
+ the interaction energies are calculated for pairs of chains (chains A and  B in the below example).
+ If a DNA complex is analyzed,
+ the interaction will be based on the chain names in the PDB file considering both chains of DNA together (e,g,
+ considering A-BC,
+ if BC is the  two strands of DNA).
+ Here follows an example of the output directory structure.
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+dirtree{% 
+\end_layout
+
+\begin_layout Plain Layout
+
+ .1 CWD.
+\end_layout
+
+\begin_layout Plain Layout
+
+ .2 results.
+ 
+\end_layout
+
+\begin_layout Plain Layout
+
+ .3 interface
+\backslash
+_ddgs.
+\end_layout
+
+\begin_layout Plain Layout
+
+ .4 A-B.
+\end_layout
+
+\begin_layout Plain Layout
+
+ .5 structure
+\backslash
+_model0
+\backslash
+_checked
+\backslash
+_Repair.
+ 
+\end_layout
+
+\begin_layout Plain Layout
+
+ .5 final
+\backslash
+_averages.
+ 
+\end_layout
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+dirtree{% 
+\end_layout
+
+\begin_layout Plain Layout
+
+ .1 CWD.
+\end_layout
+
+\begin_layout Plain Layout
+
+ .2 results.
+ 
+\end_layout
+
+\begin_layout Plain Layout
+
+ .3 interface
+\backslash
+_ddgs.
+\end_layout
+
+\begin_layout Plain Layout
+
+ .4 A-BC.
+\end_layout
+
+\begin_layout Plain Layout
+
+ .5 structure
+\backslash
+_model0
+\backslash
+_checked
+\backslash
+_Repair.
+ 
+\end_layout
+
+\begin_layout Plain Layout
+
+ .5 final
+\backslash
+_averages.
+ 
+\end_layout
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Processing the output of MutateX
+\end_layout
+
+\begin_layout Subsection
+Visualizing the output of MutateX
+\end_layout
+
+\begin_layout Standard
+Visualization of MutateX output can be performed using a set of supplied tools for graphical representation.
+ These include scripts for generating:
+ heatmaps,
+ stemplots,
+ boxplots and more to visualize the calcualted free energies,
+ either of folding or interaction.
+ Supporting these tools is a script that generates a .csv file that allows you to add custom labels to the residues used to generate plots.
+ All the scripts detailed here can be run with a 
+\begin_inset Quotes eld
+\end_inset
+
+-h
+\begin_inset Quotes erd
+\end_inset
+
+ option to print a helpful description of their purpose and the supported options.
+\end_layout
+
+\begin_layout Subsubsection
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:position-list"
+
+\end_inset
+
+Using a position list
+\end_layout
+
+\begin_layout Standard
+By default,
+ all plotting tools assume that a full mutational scan has been performed.
+ If only a partial one has been performed by using a position list file (option -q),
+ the same position list file has to be provided to the plotting tools as an additional input,
+ again with option -q.
+ All our tools support position list files except for ddg2pdb,
+ which expect a full mutational scan,
+ ddg2histo and ddg2summary,
+ both which support different mechanisms to select mutation sites or mutations (see below).
+\end_layout
+
+\begin_layout Standard
+Providing a mutation list can also be useful to limit plotting and reporting to a certain set of residues,
+ even though a larger a scan has been performed.
+ You can see an example in section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "subsec:Heatmap"
+plural "false"
+caps "false"
+noprefix "false"
+nolink "false"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Subsubsection
+Labels
+\end_layout
+
+\begin_layout Standard
+The pdb2labels tool may be used to generate a .csv file of the input ∆∆Gs folder.
+ This .csv file is used in all other plotting tools to add optional custom labels as residue names instead of those generated by FoldX.
+ pdb2labels is run by specifying one of the PDB models used for the calculation:
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+pdb2labels -p single_model.pdb
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+pdb2labels will generate a comma seperated .csv file containing 2 columns:
+ 
+\begin_inset Quotes eld
+\end_inset
+
+Residue name
+\begin_inset Quotes erd
+\end_inset
+
+ and 
+\begin_inset Quotes eld
+\end_inset
+
+label
+\begin_inset Quotes erd
+\end_inset
+
+.
+ You can open the .csv file with Microsoft Excel or similar programs to add the labels in the second column on the same row as the corrrsponding residue.
+ When the changes are saved the file can be included in all other command line plotting tools with the -b (--label) parameter and the file path to the .csv file.
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+-b 3i3c_labels.csv
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Labels are optional.
+ When the second column is left empty for any residue the plotting tools will simply use the residue name.
+\end_layout
+
+\begin_layout Subsubsection
+Heatmap
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:Heatmap"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The ddg2heatmap tool may be used to generate heatmaps of the calculated mutation ∆∆Gs.
+ ddg2heatmap is run by specifying the path to one of the “results” directory.
+ The final_averages can be used or,
+ if a specific protein model is of interest,
+ the name of the model file (see previous section).
+ In addition to the results directory,
+ the original model.pdb file and list of mutations must be supplied.
+\end_layout
+
+\begin_layout Standard
+By default wildtype amino acids are represented on the y-axis and mutated-to amino acids on the x-axis,
+ however,
+ using the option -t (transpose) these may be swapped.
+ Option -s defines the number of residues to be plotted per each plot,
+ and -n and -x control the plotted range of free energy values.
+ Values outside the range are changed to the limits of the range,
+ and are simply to be interpreted as 
+\begin_inset Quotes eld
+\end_inset
+
+very destabilizing
+\begin_inset Quotes erd
+\end_inset
+
+ or 
+\begin_inset Quotes eld
+\end_inset
+
+very stabilizing
+\begin_inset Quotes erd
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+A typical example of commandline for this tool is:
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+ddg2heatmap -p 1D5R_clean_model0_checked.pdb
+\end_layout
+
+\begin_layout Plain Layout
+
+-l mutation_list.txt 
+\end_layout
+
+\begin_layout Plain Layout
+
+-d results/mutation_ddgs/1D5R_clean_model0_checked_Repair 
+\end_layout
+
+\begin_layout Plain Layout
+
+-s 25 -n -3.0 -x 5.0 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The resulting plot is shown in figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:heatmap"
+plural "false"
+caps "false"
+noprefix "false"
+nolink "false"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement H
+alignment document
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Box Frameless
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+thickness "0.4pt"
+separation "3pt"
+shadowsize "4pt"
+framecolor "black"
+backgroundcolor "none"
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename 1_heatmap.png
+	lyxscale 30
+	scale 70
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:heatmap"
+
+\end_inset
+
+Heatmap generated using ddg2heatmap.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+It is also possible to provide a custom position list to this and other tools (see section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "subsec:position-list"
+plural "false"
+caps "false"
+noprefix "false"
+nolink "false"
+
+\end_inset
+
+).
+ In this case we provide a poslist file with the following content,
+ therefore including 8 custom residues:
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+AA39
+\end_layout
+
+\begin_layout Plain Layout
+
+GA44
+\end_layout
+
+\begin_layout Plain Layout
+
+YA46
+\end_layout
+
+\begin_layout Plain Layout
+
+NA48
+\end_layout
+
+\begin_layout Plain Layout
+
+NA49
+\end_layout
+
+\begin_layout Plain Layout
+
+NA50
+\end_layout
+
+\begin_layout Plain Layout
+
+FA56
+\end_layout
+
+\begin_layout Plain Layout
+
+LA57
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+we then run ddg2heatmap providing the poslist file with option -q,
+ obtaining the plot in figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:heatmap-poslist"
+plural "false"
+caps "false"
+noprefix "false"
+nolink "false"
+
+\end_inset
+
+:
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+ddg2heatmap -p 1D5R_clean_model0_checked.pdb
+\end_layout
+
+\begin_layout Plain Layout
+
+-l mutation_list.txt 
+\end_layout
+
+\begin_layout Plain Layout
+
+-d results/mutation_ddgs/1D5R_clean_model0_checked_Repair 
+\end_layout
+
+\begin_layout Plain Layout
+
+-n -3.0 -x 5.0
+\end_layout
+
+\begin_layout Plain Layout
+
+-q poslist.txt
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement H
+alignment document
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Box Frameless
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+thickness "0.4pt"
+separation "3pt"
+shadowsize "4pt"
+framecolor "black"
+backgroundcolor "none"
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename 1_heatmap_poslist.png
+	lyxscale 30
+	scale 70
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:heatmap-poslist"
+
+\end_inset
+
+Heatmap generated using ddg2heatmap and poslist file.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+Distribution plots
+\end_layout
+
+\begin_layout Standard
+The ddg2distribution tool can be used to generate a number of different tpyes of plots each visualizing the distribution of the mean protein ∆∆G for any mutated wildtype amino acid.
+ It can generate a stem plot,
+ a box plot,
+ a violin plot,
+ average plot and scatter plot.
+ The stem plot just plots the average ∆∆G for all the mutations of a given site,
+ and the stems are set to the standard deviation of the mean.
+ The boxplot shows the general distribution and outliers of the mean ∆∆G values for every mutation.
+ The violinplot is similar to the boxplot but also shows a continue vertical probability density plot of the data on each side of the figures.
+ The average plot shows the average per-site ∆∆G as a dot for each position,
+ allowing to identify the outliers for the whole protein.
+ The scatter plot shows the ∆∆G value for every single mutation,
+ instead of a distribution.
+\end_layout
+
+\begin_layout Standard
+Ddg2distribution may be run using some of the same inputs as for ddg2heatmap (see before).
+ The path to the “results” directory (either final_averages or a specific protein model of interest),
+ original pdb file and a list of mutated residue types are mandatory parameters:
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+ddg2distribution -d results/final_averages 
+\end_layout
+
+\begin_layout Plain Layout
+
+-p single_model.pdb -l mutation_list.txt
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Another mandatory parameter is the -T (--type) parameter.
+ You use the -T (--type) parameter to select the type of plot you want to generate.
+ You need to select at least one type.
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+-T {stem,box,violin,average,scatter}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The example below shows the command for running ddg2distribution for the stem plot - but all the available output plots can be seen in figures 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:stemplot"
+nolink "false"
+
+\end_inset
+
+,
+ 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:boxplot"
+nolink "false"
+
+\end_inset
+
+,
+ 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:violinplot"
+nolink "false"
+
+\end_inset
+
+,
+ 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:averageplot"
+nolink "false"
+
+\end_inset
+
+ and 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:scatterplot"
+plural "false"
+caps "false"
+noprefix "false"
+nolink "false"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+ddg2distribution -p 
+\end_layout
+
+\begin_layout Plain Layout
+
+3i3c_edit_model0_checked_Repair.pdb -d 
+\end_layout
+
+\begin_layout Plain Layout
+
+/results/final_averages/ -l mutation_list.txt 
+\end_layout
+
+\begin_layout Plain Layout
+
+-o distribution.png -s 25 -x 50 -n -10 
+\end_layout
+
+\begin_layout Plain Layout
+
+-T stem
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement H
+alignment document
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Box Frameless
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+thickness "0.4pt"
+separation "3pt"
+shadowsize "4pt"
+framecolor "black"
+backgroundcolor "none"
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename stem_1_energies.png
+	lyxscale 60
+	scale 55
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:stemplot"
+
+\end_inset
+
+Stem plot generated from ddg2distribution.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement H
+alignment document
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Box Frameless
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+thickness "0.4pt"
+separation "3pt"
+shadowsize "4pt"
+framecolor "black"
+backgroundcolor "none"
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename box_1_energies.png
+	lyxscale 60
+	scale 55
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:boxplot"
+
+\end_inset
+
+Boxplot generated from ddg2distribution.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement H
+alignment document
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Box Frameless
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+thickness "0.4pt"
+separation "3pt"
+shadowsize "4pt"
+framecolor "black"
+backgroundcolor "none"
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename violin_1_energies.png
+	lyxscale 60
+	scale 55
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:violinplot"
+
+\end_inset
+
+Violin plot generated from ddg2distribution.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement H
+alignment document
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Box Frameless
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+thickness "0.4pt"
+separation "3pt"
+shadowsize "4pt"
+framecolor "black"
+backgroundcolor "none"
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename average_0_energies.png
+	lyxscale 60
+	scale 55
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:averageplot"
+
+\end_inset
+
+Average plot generated from ddg2distribution.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement H
+alignment document
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Box Frameless
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+thickness "0.4pt"
+separation "3pt"
+shadowsize "4pt"
+framecolor "black"
+backgroundcolor "none"
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename scatter_1_energies.png
+	lyxscale 60
+	scale 55
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:scatterplot"
+
+\end_inset
+
+Scatter plot generated from ddg2distribution.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+Histogram plots
+\end_layout
+
+\begin_layout Standard
+The ddg2histo tool can be used to generate bar plots showing the distribution of mutatex ∆∆G values for every mutation of aspecific wildtype amino acid.
+ The user may define any number of wildtype amino acids to plot,
+ as long as they are available in the calculated data set.
+ Running the ddg2histo tool requires the same mandatory parameters as ddg2distribution and ddg2heatmap:
+ the path to the “results” directory (either final_averages or a specific protein model of interest),
+ original model.pdb file and a list of mutations.
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+ddg2histo -d results/final_averages 
+\end_layout
+
+\begin_layout Plain Layout
+
+-p single_model.pdb -l mutation_list.txt
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+To specify for which residues you want to generate a plot you use the -r parameter and a comma-separeted list of residues and residue ranges.
+ A residue range can be defined by specifying two residues separated by a '-'.
+ The residues that specify the range have to be present in the dataset.
+ The example below shows some valid residue selections.
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+-r AA16
+\end_layout
+
+\begin_layout Plain Layout
+
+-r AA16,AB31,AD55
+\end_layout
+
+\begin_layout Plain Layout
+
+-r AA16-AA68
+\end_layout
+
+\begin_layout Plain Layout
+
+-r AA68-AA16
+\end_layout
+
+\begin_layout Plain Layout
+
+-r AB31-WC44
+\end_layout
+
+\begin_layout Plain Layout
+
+-r AA16,AD31,AB16-AC50,AA68
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The residues are ordered alphabetically,
+ ignoring the first letter of the residue name (the amino acid).
+ eg:
+ DA14,
+ IA15,
+ AA16,
+ EA24,
+ IB15,
+ EB24,
+ KC61...
+\end_layout
+
+\begin_layout Standard
+Residues have to be selected by simple single residue names.
+ If a multimer contains atleast one of the selected residues,
+ it will also be added.
+\end_layout
+
+\begin_layout Standard
+The example below shows the command for running ddg2hist for residue Q110:
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+ddg2histo -p 1D5R_clean_model0_checked.pdb 
+\end_layout
+
+\begin_layout Plain Layout
+
+-l mutation_list.txt 
+\end_layout
+
+\begin_layout Plain Layout
+
+-d results/mutation_ddgs/1D5R_clean_model0_checked_Repair 
+\end_layout
+
+\begin_layout Plain Layout
+
+-r QA110 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The output of the tool is shown in figure 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:histogram"
+nolink "false"
+
+\end_inset
+
+ on page 
+\begin_inset CommandInset ref
+LatexCommand pageref
+reference "fig:histogram"
+nolink "false"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement H
+alignment document
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+vspace*{-0.4cm}
+\end_layout
+
+\end_inset
+
+
+\begin_inset Box Frameless
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+thickness "0.4pt"
+separation "3pt"
+shadowsize "4pt"
+framecolor "black"
+backgroundcolor "none"
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename QA110_histogram.png
+	lyxscale 55
+	scale 50
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:histogram"
+
+\end_inset
+
+Histogram of ∆∆G values for residue Q110 generated using ddg2hist.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+Logo plot
+\end_layout
+
+\begin_layout Standard
+ddg2logo generates pseudo-logo plots from ∆∆G values.
+ While actual logo plots are based on letter frequency,
+ these are based on the provided MutateX scan and are designed to highlight the mutation sites which specifically feature a limited number of stabilizing or destabilizing mutations,
+ as chosen by the user (see below).
+ For each site,
+ the letters of the plot represent the (de)stabilizing mutations and their height is proportional to the (de)stabilizing effect (i.e.
+ the absolute value of the respective change in free energy).
+ If a certain site has more than a certain number of selected mutations,
+ the respective column can be replaced by a X - this threshold value is controlled by the -x option.
+ The behaviour of the tool is slightly different if stabilizing or destabilizing mutations are being plotted:
+\end_layout
+
+\begin_layout Itemize
+To plot stabilizing mutations,
+ the user needs to provide option -T with a free energy threshold in kcal/mol which must be zero or negative.
+ If option -T is provided,
+ before plotting:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+all the ∆∆G values ≥ threshold are set to 0
+\end_layout
+
+\begin_layout Itemize
+the sign of all the ∆∆G values is changed (i.e.
+ they are made positive)
+\end_layout
+
+\end_deeper
+\begin_layout Itemize
+To plot destabilizing mutations,
+ the user needs to provide option -t with a free energy threshold in kcal/mol which must be zero or positive.
+ If option -t is provided,
+ before plotting:
+\end_layout
+
+\begin_deeper
+\begin_layout Itemize
+all the ∆∆G values ≤ threshold are set to 0
+\end_layout
+
+\end_deeper
+\begin_layout Standard
+This allows to obtain a 0-based positive-only plot in which the ratio between the energy values is the same as the original data.
+\end_layout
+
+\begin_layout Standard
+A typical command line for the tool is:
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+ddg2logo -p 1ju5_model0_checked.pdb 
+\end_layout
+
+\begin_layout Plain Layout
+
+-l mutation_list.txt 
+\end_layout
+
+\begin_layout Plain Layout
+
+-d results/mutation_ddgs/1D5R_clean_model0_checked_Repair
+\end_layout
+
+\begin_layout Plain Layout
+
+-s 20 -D 300   
+\end_layout
+
+\begin_layout Plain Layout
+
+-t 1.2 -cs charge
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The output is shown in 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:logo"
+plural "false"
+caps "false"
+noprefix "false"
+nolink "false"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement H
+alignment document
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+vspace*{-0.4cm}
+\end_layout
+
+\end_inset
+
+
+\begin_inset Box Frameless
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+thickness "0.4pt"
+separation "3pt"
+shadowsize "4pt"
+framecolor "black"
+backgroundcolor "none"
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename 2_logo.pdf
+	lyxscale 55
+	scale 50
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:logo"
+
+\end_inset
+
+Logo plot obtained using ddg2logo.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The user can also customize the logo plotting providing a configuration file in the yaml format with the -c option,
+ which is mutually exclusive with the -cs option to select a color scheme.
+ The configuration file contains the information about the colors to be used for the different residues.
+ 
+\end_layout
+
+\begin_layout Standard
+A typical configuration file is :
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+W:
+ 'green' 
+\end_layout
+
+\begin_layout Plain Layout
+
+F:
+ 'green' 
+\end_layout
+
+\begin_layout Plain Layout
+
+Y:
+ 'green' 
+\end_layout
+
+\begin_layout Plain Layout
+
+E:
+ 'blue' 
+\end_layout
+
+\begin_layout Plain Layout
+
+D:
+ 'blue' 
+\end_layout
+
+\begin_layout Plain Layout
+
+R:
+ 'red'  
+\end_layout
+
+\begin_layout Plain Layout
+
+H:
+ 'red' 
+\end_layout
+
+\begin_layout Plain Layout
+
+K:
+ 'red' 
+\end_layout
+
+\begin_layout Plain Layout
+
+I:
+ 'black' 
+\end_layout
+
+\begin_layout Plain Layout
+
+V:
+ 'black' 
+\end_layout
+
+\begin_layout Plain Layout
+
+G:
+ 'black' 
+\end_layout
+
+\begin_layout Plain Layout
+
+A:
+ 'black' 
+\end_layout
+
+\begin_layout Plain Layout
+
+P:
+ 'black' 
+\end_layout
+
+\begin_layout Plain Layout
+
+M:
+ 'black'  
+\end_layout
+
+\begin_layout Plain Layout
+
+L:
+ 'black' 
+\end_layout
+
+\begin_layout Plain Layout
+
+C:
+ 'black' 
+\end_layout
+
+\begin_layout Plain Layout
+
+N:
+ 'black' 
+\end_layout
+
+\begin_layout Plain Layout
+
+Q:
+ 'black' 
+\end_layout
+
+\begin_layout Plain Layout
+
+S:
+ 'black' 
+\end_layout
+
+\begin_layout Plain Layout
+
+T:
+ 'black'
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+A possible output for the above configuration file is shown in 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:logo-1"
+plural "false"
+caps "false"
+noprefix "false"
+nolink "false"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement H
+alignment document
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+vspace*{-0.4cm}
+\end_layout
+
+\end_inset
+
+
+\begin_inset Box Frameless
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+thickness "0.4pt"
+separation "3pt"
+shadowsize "4pt"
+framecolor "black"
+backgroundcolor "none"
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename config_logo.pdf
+	lyxscale 55
+	scale 50
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:logo-1"
+
+\end_inset
+
+Logo plot obtained using ddg2logo with a configuration file.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+Principal Component Analysis biplot.
+\end_layout
+
+\begin_layout Standard
+The ddg2pca tool is designed to perform Principal Component Analysis (PCA) on ΔΔG data and visualize the first two principal components in a biplot and the explained variance per principal component.
+ This tool offers a comprehensive way to visualize the impact of multiple mutations on the stability of proteins.
+\end_layout
+
+\begin_layout Standard
+Ddg2pca can be run in default mode using some of the same inputs as for ddg2heatmap and ddg2distribution (see before).
+ The path to the “results” directory (either final_averages or a specific protein model of interest),
+ original pdb file and a list of mutated residue types are mandatory parameters.
+ By default,
+ it generates a scatter plot with labels with the first two principal components,
+ as well as a scree plot showing the percentage of variance explained by the first 10 components.
+\end_layout
+
+\begin_layout Standard
+A default commandline for this tool would look like:
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+ddg2pca -d results/final_averages  -p single_model.pdb -l mutation_list.txt
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename pca_default.pdf
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement document
+alignment document
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:pca-1"
+
+\end_inset
+
+PCA biplot obtained using ddg2pca with the default settings.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The optional arguments give the possibility of customising the biplot.
+ Users can decide if data should be scaled before undergoing PCA using the -u or --unscaled option;
+ the default behavior is to scale.
+ The -z or --scatter option,
+ when engaged,
+ will suppress labels,
+ producing just a scatter plot,
+ while the -y or --loadings option,
+ when activated,
+ will display the loadings in the biplot.
+ Like previous tools,
+ ddg2pca accepts the -b or –labels to obtain custom labels as residue names,
+ as well as the -q or –position-list option to conduct PCA on a specific susbet of residues.
+ In addition,
+ -t or --text_list allows users to indicate specific residues that should be presented as text in the generated plot,
+ hiding text from other residues.
+\end_layout
+
+\begin_layout Standard
+The user can customize the residue grouping and coloring providing a configuration file in the yaml format with the -c option (see before).
+ Without specifying this,
+ the software defaults to sorting residues based on their physicochemical attributes (hydrophobic,
+ polar,
+ basic,
+ acidic,
+ aromatic).
+ The configuration file can create custom classes with residues as in ddg2logo,
+ but it also accepts classes grouping positions of the protein.
+ An example of this alternative configuration file can be seen below:
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+Buried:
+   
+\end_layout
+
+\begin_layout Plain Layout
+
+	residues:
+    
+\end_layout
+
+\begin_layout Plain Layout
+
+		- GA2    
+\end_layout
+
+\begin_layout Plain Layout
+
+		- EA3  
+\end_layout
+
+\begin_layout Plain Layout
+
+		- HA4     
+\end_layout
+
+\begin_layout Plain Layout
+
+		- LA6   
+\end_layout
+
+\begin_layout Plain Layout
+
+	color:
+ [0.0,
+ 0.2706,
+ 0.6980] 
+\end_layout
+
+\begin_layout Plain Layout
+
+Exposed:
+   
+\end_layout
+
+\begin_layout Plain Layout
+
+	residues:
+     
+\end_layout
+
+\begin_layout Plain Layout
+
+		- MA1     
+\end_layout
+
+\begin_layout Plain Layout
+
+		- GA5     
+\end_layout
+
+\begin_layout Plain Layout
+
+		- EA7   
+\end_layout
+
+\begin_layout Plain Layout
+
+	color:
+ [0.4039,
+ 0.9020,
+ 0.0] 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Either with the default group configuration or by a custom configuration file,
+ users looking to center their analyses on certain residue groups can utilize the -g or --group option,
+ else the tool plots all residues.
+\end_layout
+
+\begin_layout Standard
+A personalised commandline for this tool with a custom configuration file and textlist could look like:
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+ddg2pca -d results/final_averages  -p single_model.pdb -l mutation_list.txt -t text_list.txt -c config_file.yaml
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename pca_config.pdf
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement document
+alignment document
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:pca-2"
+
+\end_inset
+
+PCA plot obtained using ddg2pca with a configuration file and a text list.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+For full list of user specified options see the ddg2pca help option.
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+ddg2pca -h 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+PDB file and matrix file.
+ 
+\end_layout
+
+\begin_layout Standard
+The ddg2pdb tool can be used to write the outcome of the mutational scan as b-factors in PDB files,
+ as well as writing input files compatible with the xPyder PyMOL plugin.
+ Running ddg2pdb requires the path to the “results” directory (either final_averages or a specific protein model of interest),
+ the original model pdb file and list of mutations.
+ Additionally,
+ an upper and lower cut-off of protein ∆∆G is needed,
+ as the tool will save for each residue the number of mutations which are within the specified parameters.
+ Default cut-off values are:
+ lower = -99999.0 and upper = 99999.0.
+ If the ddg2pdb option -t is set to "between" the tool will extract the values between upper and lower.
+ Alternatively -t may be set to "outside" specifying that everything < then the lower cut-off and/or everything  > than the upper sould be included.
+\end_layout
+
+\begin_layout Standard
+For full list of user specified options see the ddg2pdb help option.
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+ddg2pdb -h 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+A typical command line for ddg2pdb is as follows.
+ Cut-offs are set to between lower = 1.0 and upper = 99999.0 in order to obtain for each residue the number of destabilizing mutations (defined as ∆∆G >= 1.0).
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+ddg2pdb -p 1D5R_clean_model0_checked.pdb -l mutation_list.txt
+\end_layout
+
+\begin_layout Plain Layout
+
+-d results/mutation_ddgs/1D5R_clean_model0_checked_Repair 
+\end_layout
+
+\begin_layout Plain Layout
+
+-a 3.0 -b 99999.0 -T between
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+Energy distribution of all the mutations
+\end_layout
+
+\begin_layout Standard
+The ddg2density tool can produce a density plot of all the calculated differences in free energies,
+ after removing self-mutations,
+ by employing kernel density estimation as implemented in the scipy package.
+ The typical command line is:
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+ddg2density -p 1D5R_clean_model0_checked.pdb 
+\end_layout
+
+\begin_layout Plain Layout
+
+-l mutation_list.txt 
+\end_layout
+
+\begin_layout Plain Layout
+
+-d results/mutation_ddgs/1D5R_clean_model0_checked_Repair
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The output of the tool include the plot of the density,
+ the density values and relative energy values as text files,
+ as well as the energy values used for the calculation.
+ The plot shows the calculated density and all the single energy values identified below the x-axis.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement H
+alignment document
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+vspace*{-0.4cm}
+\end_layout
+
+\end_inset
+
+
+\begin_inset Box Frameless
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+use_makebox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+thickness "0.4pt"
+separation "3pt"
+shadowsize "4pt"
+framecolor "black"
+backgroundcolor "none"
+status open
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename kde_density.png
+	lyxscale 55
+	scale 50
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:density"
+
+\end_inset
+
+Density plot obtained using ddg2density.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Processing and converting the output of MutateX
+\end_layout
+
+\begin_layout Subsubsection
+Excel Sheet
+\end_layout
+
+\begin_layout Standard
+ddg2excel is a tool for exporting results as a table in either an excel  sheet or a comma-separated file.
+ The excel file is the default format but can be changed by optionally adding -F csv.
+  The table has the same basic structure as the ddg2heatmap tool.
+  To get the table,
+ a typical command line for this tool is:
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+ddg2excel -p 1D5R_clean_model0_checked.pdb
+\end_layout
+
+\begin_layout Plain Layout
+
+-l mutation_list.txt
+\end_layout
+
+\begin_layout Plain Layout
+
+-d 1D5R_clean_model0_checked_Repair
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+Linear correction of the energy values
+\end_layout
+
+\begin_layout Standard
+Using the ddg2dg tool,
+ it's possible to apply a linear correction to the calculated energy values,
+ in the form:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\Delta\Delta G_{mod}=x+DDG_{orig}*m+y
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Where 
+\begin_inset Formula $\Delta\Delta G_{orig}$
+\end_inset
+
+ are the original energy values.
+ x,
+ m and y can be specified by options on the command line.
+ The tool accepts a MutateX results directory with option -d,
+ and writes another directory with exactly the same format and the modified values.
+ For instance,
+ the following command line can be used:
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+ddg2dg -p 1D5R_clean_model0_checked.pdb 
+\end_layout
+
+\begin_layout Plain Layout
+
+-d results/mutation_ddgs/1D5R_clean_model0_checked_Repair 
+\end_layout
+
+\begin_layout Plain Layout
+
+-m 1 -y 0 -x 0
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+Summary of interesting mutations
+\end_layout
+
+\begin_layout Standard
+The ddg2summary tool writes a text file with the average 
+\begin_inset Formula $\Delta\Delta G$
+\end_inset
+
+ values of specific mutations.
+ The mutations are specified in a text file that is mandatory.
+ The file contains one mutation per line,
+ each of them needs to be in the form:
+ [WT residue type][chain][residue number][mutant residue].
+ The wild-type residue type can be omitted.
+ The following is a typical command line for the tool:
+\end_layout
+
+\begin_layout Standard
+\begin_inset listings
+inline false
+status open
+
+\begin_layout Plain Layout
+
+ddg2summary -p 1D5R_clean_model0_checked.pdb 
+\end_layout
+
+\begin_layout Plain Layout
+
+-l mutation_list.txt 
+\end_layout
+
+\begin_layout Plain Layout
+
+-d results/mutation_ddgs/1D5R_clean_model0_checked_Repair
+\end_layout
+
+\begin_layout Plain Layout
+
+-L mutations_of_interest.txt
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+FAQ
+\end_layout
+
+\begin_layout Subsubsection*
+Q:
+ Is it possible to include non-standard (for instance,
+ phosphorilated) residues in the mutation list?
+\end_layout
+
+\begin_layout Standard
+A:
+ Yes it is!
+ See the following web page for the list of supported residues:
+ http://foldxsuite.crg.eu/allowed-residues
+\end_layout
+
+\begin_layout Subsubsection*
+Q:
+ Is it possible to calculate changes of free energy of interaction between protein of DNA?
+\end_layout
+
+\begin_layout Standard
+A:
+ Yes,
+ simpling by changing template files when calculating interaction energy.
+ See section 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "subsec:Optional:-Free-energy"
+plural "false"
+caps "false"
+noprefix "false"
+nolink "false"
+
+\end_inset
+
+.
+\end_layout
+
+\end_body
+\end_document

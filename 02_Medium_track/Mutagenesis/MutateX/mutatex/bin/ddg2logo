@@ -1,0 +1,290 @@
+#!/usr/bin/env python
+
+#    ddg2logo: plot MutateX DDGs as logo plots
+#    Copyright (C) 2024, Matteo Tiberti <matteo.tiberti@gmail.com>
+#                        Μattia Utichi <biomatt90@gmail.com>
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+import argparse
+import matplotlib
+matplotlib.use('Agg')
+matplotlib.rcParams['savefig.format'] = 'pdf'
+matplotlib.rcParams['hatch.linewidth'] = 0.5
+from matplotlib import pyplot as plt
+from Bio import PDB
+from mutatex.utils import *
+import numpy as np
+import pandas as pd
+import logging as log
+import yaml
+from yaml.loader import SafeLoader
+import logomaker
+
+description = 'ddg2logo: make logo plots for MutateX DDG values'
+epilog = """ddg2logo generates pseudo-logo plots from DDG values.  While actual logo
+plots are based on letter frequency, these are based on the provided MutateX
+scan and are designed to highlight the mutation sites which specifically feature
+a limited number of stabilizing (accepted) or destabilizing mutations (not accepted). For each site, the
+letters of the plot represent the stabilizing (or destabilizing) mutations and their height is
+proportional to the stabilizing (or destabilizing)  effect (i.e. to the absolute value of the
+respective energy). If a certain site has more than a certain number of
+accepted (or not accepted) mutations, the respective column can be replaced by a X - this is
+controlled by the -x option. Before plotting the following transformations are
+carried out on the data:
+
+STABILIZING MUTATIONS
+* the DDG values >= than the stabilizing threshold (option -T) are set equal to 0 
+* the sign of all the DDGs is changed - so that it becomes more positive if
+  it's stabilizing
+
+DESTABILIZING MUTATIONS
+* the DDG values <= than the destabilizing threshold (option -t) are set equal to 0
+
+This allows to obtain a 0-based positive-only plot in which the ratio between
+the energy values is the same as the original data."""
+
+def plot_logo(array,reslist,xlabels,splice,color_scheme,font,degeneracy):
+
+    # Extract the array and labels
+    array_data = array     # 2D array
+    labels = xlabels       # List of labels
+
+    # Convert to DataFrame and assign labels as columns
+    df = pd.DataFrame(array_data, columns=reslist)
+
+    # Add a column for the X letter for the degeneracy option
+    df['X'] = 0.00000
+
+    # Calculate the sum of positive values in each row
+    df['X'] = df.drop(columns='X', errors='ignore').apply(lambda row: row[row > 0].sum(), axis=1)
+
+    # Identify rows where the number of positive values is below the threshold
+    mask_below_threshold = df.drop(columns='X').gt(0).sum(axis=1) <= degeneracy
+
+    # Reset 'X' to zero for rows below the threshold
+    df.loc[mask_below_threshold, 'X'] = 0
+
+    # Identify rows where the number of positive values exceeds the threshold
+    mask_above_threshold = ~mask_below_threshold
+
+    # Set all other values to zero for rows exceeding the threshold
+    df.loc[mask_above_threshold, df.columns != 'X'] = 0
+    # create Logo object
+    fig = logomaker.Logo(df,
+                        figsize=(0.5*splice,5),
+                        stack_order='small_on_top',
+                        color_scheme=color_scheme,
+                        font_name = font if font is not None else 'Arial')
+
+    # style using Logo methods
+    fig.style_spines(visible=False)
+    fig.style_spines(spines=['left', 'bottom'], visible=True)
+    fig.style_xticks(rotation=90, fmt='%d', anchor=0)
+
+    # Set custom x-axis labels
+    fig.ax.set_xticklabels(labels)
+
+    # Set tick positions explicitly
+    tick_positions = range(len(labels))
+    fig.ax.set_xticks(tick_positions)
+
+    # style using Axes methods
+    fig.ax.set_ylabel(r"modified FoldX $\Delta \Delta G$ (kcal/mol)", labelpad=-1)
+
+    return fig
+
+def splice_data(data, labels, sv):
+
+    out = []
+
+    if data.shape[0] <= sv:
+        return [[data, labels]]
+
+    nsplice = data.shape[0] // int(sv)
+    rest =    data.shape[0] % int(sv)
+
+    if rest != 0:
+        nsplice += 1
+
+    for i in range(nsplice):
+        out.append([
+                data[i*sv:(i+1)*sv,:],
+                labels[i*sv:(i+1)*sv]
+                   ])
+
+    return out
+
+
+
+LOGFMT = "%(levelname)s: %(message)s"
+
+if not __name__ == "__main__":
+    exit()
+
+parser = argparse.ArgumentParser(
+description=description, epilog=epilog, formatter_class=argparse.RawTextHelpFormatter)
+optional = parser._action_groups.pop()
+required = parser.add_argument_group('required arguments')
+thresholds = required.add_mutually_exclusive_group(required=True)
+colors = optional.add_mutually_exclusive_group(required=False)
+
+required = init_arguments(['pdb', 'data', 'mutation_list'], required)
+optional = init_arguments(['multimers', 'position_list'], optional)
+
+thresholds.add_argument("-T","--stab-threshold", dest="threshold_stab", action='store', type=float, help="DDG threshold values for stabilizing mutations - mutations with DDG higher than this are not considered. This option is mutually exclusive to option '-t'. ")
+thresholds.add_argument("-t","--destab-threshold", dest="threshold_destab", action='store', type=float, help="DDG threshold values for destabilizing mutations - mutations with DDG lower than this are not considered. This option is mutually exclusive to option '-T'.")
+optional.add_argument("-x","--maximum-degeneracy", dest="degeneracy", action='store', type=int, default=20, help="when the number of stabilizing/destabilizing mutations is higher than this threshold an X will be plotted instead")
+optional = init_arguments(['labels', 'fonts', 'fontsize', 'title', 'splice'], optional)
+optional.add_argument("-D","--dpi", dest="dpi", type=float, action='store', default=150, help="number of DPI for the output image. Saving the images at higher DPI (as 300) uses a lot of memory, therefore use with caution" )
+optional.add_argument("-o","--output", dest="outfile", action='store', default='logo.pdf', help="logo plot file names")
+colors.add_argument("-c","--config", dest="config_file", action='store', default=None, help="configuration file with which the user can set the colour of subsets of residues")
+colors.add_argument("-cs","--color_scheme", dest="color_scheme", choices=['NajafabadiEtAl20217','charge','chemistry','dmslogo_charge','dmslogo_funcgroup','hydrophobicity','skylign_protein','weblogo_protein'], help="Provide a color scheme for residues. Options: 'NajafabadiEtAl20217','charge','chemistry','dmslogo_charge','dmslogo_funcgroup','hydrophobicity','skylign_protein','weblogo_protein'")
+optional = init_arguments(['verbose'], optional)
+
+parser._action_groups.append(optional)
+options = parser.parse_args()
+
+if options.font is not None:
+    try:
+        set_default_font(options.font)
+    except NameError:
+        log.error("The specified font is not available. Available fonts:")
+        log.error(get_font_list())
+        exit(1)
+
+if options.verbose:
+    log.basicConfig(level=log.INFO,    format=LOGFMT)
+else:
+    log.basicConfig(level=log.WARNING, format=LOGFMT)
+
+# check positive value for DPI
+if options.dpi <= 0:
+    log.error('Specified resolution for image (option -D) should be a positive number. Exiting...')
+    exit(1)
+
+# parse mutation list
+try:
+    res_order = parse_mutlist_file(options.mutation_list)
+except IOError:
+    exit(1)
+
+log.info("Residues list is:")
+for i,r in enumerate(res_order):
+    log.info("%d\t%s" % (i,r))
+
+# parse structure
+pdb_parser = PDB.PDBParser()
+try:
+    structure = pdb_parser.get_structure('s', options.in_pdb)
+except:
+    log.error("Couldn't open or parse input pdb file. Exiting...")
+    exit(1)
+
+res_ids_str = []
+data = []
+
+# get structure residue list
+try:
+    res_ids_str = get_residue_list(options.in_pdb, multimers=options.multimers)
+except IOError:
+    exit(1)
+
+if options.position_list is not None:
+    log.info("Positions will be read from file")
+    try:
+        poslist = parse_poslist_file(options.position_list, res_ids_str)
+    except (IOError, TypeError):
+        exit(1)
+
+    res_ids_str = filter_reslist(res_ids_str, poslist)
+
+fnames = ["_".join(r) for r in res_ids_str]
+res_id_labels = [", ".join(r) for r in res_ids_str]
+
+# use custom labels if provided
+if options.labels:
+    try:
+        labels = parse_label_file(options.labels, fnames, res_id_labels)
+    except:
+        exit(1)
+else:
+    labels = res_id_labels
+
+# use custom colour for residues subsets if a config file is provided
+if options.config_file:
+    try:
+        with open(options.config_file) as f:
+            colors = yaml.load(f, Loader=SafeLoader)
+    except:
+        log.error("Couldn't open or parse config file. Exiting...")
+        exit(1)
+elif options.color_scheme:
+    colors = options.color_scheme
+else:
+    # if config file doesn't exist and a color scheme is not selected,
+    # let's use a mock configuration
+    colors = {'A':'black','C':'black','D':'black','E':'black','F':'black', 
+              'G':'black','H':'black','I':'black','K':'black','L':'black',
+              'M':'black','N':'black','P':'black','Q':'black','R':'black',
+              'S':'black','T':'black','V':'black','W':'black','Y':'black',
+              'X':'black'}
+
+# parse DDG files
+data = []
+for fname in fnames:
+    try:
+        this_data = parse_ddg_file("%s/%s" % (options.ddg_dir, fname), reslist=res_order)
+    except (IOError, TypeError):
+        exit(1)
+
+    data.append(np.array(this_data))
+
+data = np.vstack(tuple(data))
+
+# set values above the threshold (for stabilizing mutations) or below
+# it (for the destabilizing ones) equal to 0
+# In the case of stabilizing mutations, invert sign so that higher values are more stabilizing
+
+if options.threshold_stab is not None:
+    if options.threshold_stab > 0:
+        log.error("the DDG threshold provided in option -T must be <= 0. Exiting...")
+        exit(1)
+
+    data[data >= options.threshold_stab] = 0 
+    data = (data) * (-1)
+
+elif options.threshold_destab is not None:
+   if options.threshold_destab < 0:
+       log.error("the DDG threshold provided in option -t must be >= 0. Exiting...")
+       exit(1)
+   data[ data <= options.threshold_destab ] = 0
+
+#splice & plot
+spliced_data = splice_data(data, labels, options.sv)
+
+for i in range(len(spliced_data)):
+    fig = plot_logo(spliced_data[i][0],
+                    res_order,
+                    spliced_data[i][1],
+                    options.sv,
+                    colors,
+                    options.font,
+                    options.degeneracy)
+
+    # Save the logo as a PDF
+    plt.savefig("%d_%s" %(i, options.outfile),
+                format='pdf',
+                bbox_inches='tight',
+                dpi=options.dpi)

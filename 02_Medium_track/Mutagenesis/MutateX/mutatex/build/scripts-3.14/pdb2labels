@@ -1,0 +1,94 @@
+#!/opt/anaconda3/envs/mutatex-env/bin/python
+#    pdb2labels: Generate a custom .csv file aimed at using custom labels.
+#    Copyright (C) 2019, Matteo Tiberti <matteo.tiberti@gmail.com,
+#                        Tycho Canter Cremers <tycho.c.c@gmail.com>
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+import os
+import argparse
+import csv
+import numpy as np
+import logging as log
+from Bio import PDB
+from six import iteritems
+import sys
+from mutatex.utils import *
+
+description = "pdb2labels: generate a csv file used to specify custom residue labels to the plotting scripts"
+epilog = """starting from a pdb file, pdb2labels generates a csv table file to be filled
+in by the user and fed to the plotting scripts, so that custom residue labels
+can be used instead of the default ones. The csv file has two columns: one with
+MutateX residue specifiers generated from the PDB file, and the second has
+custom labels to be used instead, that must be filled in by the user. Only a
+subset of labels may be filled in, and the default labels will be used instead
+of the missing ones"""
+
+if sys.version_info[0] <= 2:
+    write_format = 'wb'
+else:
+    write_format = 'w'
+
+def names_to_labels(csv_fh, fnames):
+    csv_writer = csv.writer(csv_fh,
+                            delimiter=',',
+                            quotechar='|',
+                            lineterminator=os.linesep,
+                            quoting=csv.QUOTE_MINIMAL)
+    csv_writer.writerow(['Residue_name', 'Label'])
+    for fname in fnames:
+        csv_writer.writerow([fname, ""])
+
+LOGFMT = "%(levelname)s: %(message)s"
+
+parser = argparse.ArgumentParser(description=description, epilog=epilog, formatter_class=argparse.RawTextHelpFormatter)
+
+optional = parser._action_groups.pop()
+required = parser.add_argument_group('required arguments')
+
+required = init_arguments(['pdb'], required)
+optional = init_arguments(['multimers'], optional)
+
+optional.add_argument("-o","--output", dest="outfile", action='store', default='labels.csv', help='output csv label file')
+
+optional = init_arguments(['verbose'], optional)
+
+parser._action_groups.append(optional)
+options = parser.parse_args()
+
+if options.verbose:
+    log.basicConfig(level=log.INFO,    format=LOGFMT)
+else:
+    log.basicConfig(level=log.WARNING, format=LOGFMT)
+
+res_ids_str = []
+try:
+    res_ids_str = get_residue_list(options.in_pdb, multimers=options.multimers)
+except IOError:
+    exit(1)
+
+if options.multimers:
+    fnames = ["_".join(r) for r in res_ids_str]
+    res_id_labels = [", ".join(r) for r in res_ids_str]
+else:
+    fnames = res_ids_str
+    res_id_labels = res_ids_str
+
+try:
+    with open(options.outfile, write_format) as csvfh:
+        names_to_labels(csvfh, fnames)
+except IOError:
+    log.error("couldn't open output file for writing; exiting...")
+    exit(1)
+

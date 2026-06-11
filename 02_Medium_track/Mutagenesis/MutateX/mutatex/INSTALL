@@ -1,0 +1,69 @@
+INSTALLATION
+============
+
+Requirements
+------------
+
+MutateX is designed to run on Linux and MacOS.
+
+Notice that, while MutateX runs on the Windows Subsystem for Linux,
+its parallelization strategy has been reported not to run correctly (see Issue #205).
+We recommend running MutateX with only one process when running on WSL, or to use a
+full Linux virtual machine, or just a Linux system altogether.
+
+MutateX requires Python >=3.10 and the following Python packages:
+
+setuptools
+biopython
+numpy
+matplotlib
+scipy
+six
+openpyxl
+pandas
+logomaker
+pyyaml
+adjustText >= 0.8
+
+The most convenient way to install MutateX is by creating a Python virtual 
+environment in which all the requirements will be installed. In order to do
+this, you should have the virtualenv and pip packages installed in your system
+as well.
+
+MutateX also requires a version of FoldX to be present on your system. Please
+refer to http://foldxsuite.crg.eu to obtain one.
+
+Installation steps
+------------------
+
+1) if you have git, download the git codebase or clone the repository:
+
+	git clone https://github.com/ELELAB/mutatex.git
+
+2) First create the virtual environment using the virtualenv package and 
+activate it:
+
+	virtualenv mutatex-env
+	. mutatex-env/bin/activate
+
+3) install mutatex using the included setup file. All the requirements will
+will be automatically installed
+
+	cd mutatex
+	python setup.py install 
+
+4) The mutatex scripts should now be available to run
+
+5) This step is optional, but strongly advised. MutateX needs to know the 
+location of the FoldX binary and rotabase.txt file in order to work. Depending
+on the version you are using, you might need to provide the binary file only.
+MutateX first tries to find these files looking at the content of the FOLDX_BINARY
+and FOLDX_ROTABASE system variables. Therefore, it is advisable to set these 
+system variables in the .profile or .bashrc file in your user's home, by adding
+the following lines:
+
+	export FOLDX_BINARY=/usr/local/foldx/foldx
+	export FOLDX_ROTABASE=/usr/local/foldx/rotabase.txt
+
+alternatively, the user can provide the location of such files directly on the
+command line of the mutatex script.

@@ -1,0 +1,10 @@
+biopython
+matplotlib
+numpy
+pandas
+logomaker
+scipy
+six
+openpyxl
+pyyaml
+adjustText>=0.8

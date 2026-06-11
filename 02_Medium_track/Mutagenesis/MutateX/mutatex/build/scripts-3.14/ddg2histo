@@ -1,0 +1,236 @@
+#!/opt/anaconda3/envs/mutatex-env/bin/python
+
+#    ddg2histo: plot DDG MutateX results as histograms, one per residue.
+#    Copyright (C) 2019,    Isabelle da Piedade <isap@cancer.dk>,
+#                            Matteo Tiberti <matteo.tiberti@gmail.com>,
+#                            Tycho Canter Cremers <tycho.c.c@gmail.com>
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+import numpy as np
+import logging as log
+import argparse
+import matplotlib
+matplotlib.use('Agg')
+matplotlib.rcParams['savefig.format'] = 'pdf'
+from matplotlib import pyplot as plt
+import re
+import csv
+from six import iteritems
+from Bio import PDB
+from mutatex.utils import *
+
+description = 'ddg2histo: plot a histogram of the DDGs calculated for all the mutations of a single residue'
+epilog = """This script plots the DDG values for a single mutation site as a histogram,
+one mutant per bar. The error bar in the histogram corresponds to the standard
+deviation of DDG as stored in the DDG file (so it might be over different
+conformations or over different FoldX runs, depending on which dataset is used).
+Option -r allows to specify which residues or residue have to be plotted using a
+mini-language: single residue are specified in a similar fashion as the output
+DDG filenames: [wild-type type][chain][number] (ex. KA32). Multiple residues
+definitions are separated by commas and ranges are defined by dashes. Use single
+residues only - not multiple residues as when doing scans of multimers - the
+program will identify the corresponding residues regardless. For example:
+
+    KA32 KA32,LA26,LA54 KA32-QA64,DB34
+
+the values for each mutation site will be plotted individually indifferent
+files"""
+
+def parse_residues(residues, fnames, single_res_ids):
+    residues = residues.split(",")
+    selections = []
+    log.info("List of residues:  " + " ".join(fnames))
+    for residue in residues:
+        if "-" in residue:  #Check if the selections is a range of residues
+            if len(residue.split("-")) > 2:
+                log.error("Selection: '%s' invalid range. A range can only be between 2 residues. Exiting..." %(residue))
+                exit(1)
+            for idx in residue.split("-"):
+                if "_" in idx:
+                    log.error("Selection: '%s' in range '%s' invalid residue format. Select a range using non-multimers. If a multimer falls within that range, it will be added. Exiting..." %(idx, residue))
+                    exit(1)
+                elif not re.match(r'[A-Za-z]{2}\d+$', idx):
+                    log.error("Selection: '%s' in range '%s' invalid residue format. Exiting..." %(idx, residue))
+                    exit(1)
+            try:    #Try to get indices of the range.
+                range_idxs = [single_res_ids.index(residue.split("-")[0]), single_res_ids.index(residue.split("-")[-1])]
+                range_idxs.sort()
+            except ValueError as e:
+                log.error("Invalid range: " + str(e) + ". Make sure you use exisiting residues. Exiting...")
+                exit(1)
+
+            range = single_res_ids[range_idxs[0]:range_idxs[1] + 1]
+            for single_res in range:   #Get selection from fnames
+                selections += [s for s in fnames if single_res in s]
+            log.info("Pdb file matched %d residues in range '%s'" % (len(range), residue))
+        else:   #If the selection is not a range.
+            if "_" in residue:
+                log.error("Selection: '%s' invalid residue format. Select a residue using non-multimers. If a multimer matches, it will be added. Exiting..." %(residue))
+                exit(1)
+            elif not re.match(r'[A-Za-z]{2}\d+$', residue):
+                log.error("Selection: '%s' invalid residue format. Exiting..." %(residue))
+                exit(1)
+
+            match = [s for s in fnames if residue == s]
+            assert len(match) == 1 or len(match) == 0
+            if len(match) == 1:
+                selections += match
+                log.info("Pdb file matched single residue %s" % (residue))
+            else:
+                log.warn("Selection: '%s' no match was found; it will be skipped" % (residue))
+
+    selections = list(set(selections))
+    log.info("Pdb file matched %d residues in total without duplicates" %(len(selections)))
+    return selections
+
+
+def plot_hist(data, stds, res_order, vmin, vmax, residue, color="grey", title=None, fontsize=12):
+    if title is None:
+        title = ""
+    if color not in matplotlib.colors.cnames:
+        log.error("%s is not a valid color. For all valid color names check matplotlib.colors.cnames. Exiting..." % (color))
+        exit(1)
+    if title:
+        plt.title(residue +" - " + title)
+    else:
+        plt.title(residue)
+    plt.bar(list(range(len(res_order))), data, 1/1.6, color = color, align="center", yerr = stds)
+    plt.axhline(0.0, color="black", linewidth=0.5)
+    plt.xticks(list(range(len(res_order))), res_order, rotation='horizontal', size = fontsize)
+    plt.xlim(-0.5, len(res_order) - 0.5)
+    plt.ylim(vmin,vmax)
+    plt.ylabel(r'FoldX $\Delta\Delta{}$G (kcal/mol)')
+    plt.xlabel('Mutations')
+
+LOGFMT = "%(levelname)s: %(message)s"
+
+if not __name__ == "__main__":
+    exit()
+
+parser = argparse.ArgumentParser(
+    description=description, epilog=epilog, formatter_class=argparse.RawTextHelpFormatter)
+optional = parser._action_groups.pop()
+required = parser.add_argument_group('required arguments')
+
+required = init_arguments(['pdb', 'data', 'mutation_list'], required)
+optional = init_arguments(['multimers'], optional)
+
+optional.add_argument("-r","--residues", dest="residues", type= str, help="list of residues to be plotted (see below)")
+optional.add_argument("-n","--min", dest='vmin',action='store',default=None,type=float,help="minimum value to be plotted")
+optional.add_argument("-x","--max", dest='vmax',action='store',default=None,type=float,help="maximum value to be plotted")
+
+optional = init_arguments(['title', 'labels', 'fonts', 'fontsize'], optional)
+optional.add_argument("-c","--color", dest="color", default="grey", type= str, help="color of the bars in the barplot (default: black)")
+
+optional.add_argument("-o","--output", dest="outfile", action='store', default='histogram.pdf', help="output filename")
+
+optional = init_arguments(['verbose'], optional)
+
+parser._action_groups.append(optional)
+options = parser.parse_args()
+
+if options.font is not None:
+    try:
+        set_default_font(options.font)
+    except NameError:
+        log.error("The specified font is not available. Available fonts:")
+        log.error(get_font_list())
+        exit(1)
+
+if options.verbose:
+    log.basicConfig(level=log.INFO,    format=LOGFMT)
+else:
+    log.basicConfig(level=log.WARNING, format=LOGFMT)
+
+try:
+    res_order = parse_mutlist_file(options.mutation_list)
+except (IOError, TypeError):
+    exit(1)
+
+log.info("Residues list is:")
+for i,r in enumerate(res_order):
+    log.info("%d\t%s" % (i,r))
+
+res_ids = []
+res_ids_str = []
+data = []
+stds = []
+
+res_ids_str = get_residue_list(options.in_pdb, multimers=options.multimers)
+single_res_ids = get_residue_list(options.in_pdb, multimers=False)
+
+fnames = ["_".join(r) for r in res_ids_str]
+
+#Parse residue selection
+try:
+    if options.residues == "all":
+        residues = fnames
+    else:
+        residues = parse_residues(options.residues, fnames, single_res_ids)
+except AttributeError:
+    log.error("No residue selection. Please select residues with atribute '-r'. Try 'ddg2hist --help' for more info.  Exiting...")
+    exit(1)
+
+#Assign custom residue labels
+
+res_id_labels = [ r.replace('_', ', ') for r in residues ]
+
+if options.labels:
+    try:
+        labels = parse_label_file(options.labels, residues, res_id_labels)
+    except:
+        exit(1)
+else:
+    labels = res_id_labels
+
+for residue in residues:
+    try:
+        this_data, this_std, this_min, this_max = parse_ddg_file("%s/%s" % (options.ddg_dir, residue), reslist=res_order, full=True)
+    except (IOError, TypeError):
+        exit(1)
+
+    data.append(np.array(this_data))
+    stds.append(np.array(this_std))
+
+try:
+    data = np.vstack(tuple(data))
+    stds = np.vstack(tuple(stds))
+except:
+    log.error("The loaded mutation data is not consistent in size. Exiting...")
+    exit(1)
+
+#Find min and max in selected data
+data_range = abs(np.max(data) - np.min(data))
+
+if not options.vmax:
+    options.vmax = np.ceil(np.max(data) + data_range*0.2)
+if not options.vmin:
+    options.vmin = np.floor(np.min(data) - data_range*0.2)
+
+#Make plots
+log.info("Plotting " + str(len(data)) + " figures.")
+log.info("Ylims: " + str(options.vmax) + " , " + str(options.vmin))
+for i in range(len(residues)):
+    plot_hist(data[i],
+              stds[i],
+              res_order,
+              options.vmin,
+              options.vmax,
+              labels[i],
+              color = options.color,
+              title = options.title,
+              fontsize = options.fontsize)
+    plt.savefig("%s_%s" %(residues[i], options.outfile))
+    plt.clf()
