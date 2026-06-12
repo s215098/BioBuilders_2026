@@ -3,10 +3,13 @@
 Laccase Virtual Screening Pipeline
 ===================================
 Docks two ligands (NNBT, Guaiacol) against ~79 laccase-like sequences using
-AutoDock Vina at pH 7.  The T1 copper site is located by mapping three
-copper-coordinating residues (His443, Cys500, His505 in the reference) to
-their homologues in each target via sequence-guided Cα superposition, then
-centering a 22 Å search box on the sidechain-atom centroid.
+AutoDock Vina at pH 7.  The T1 copper site is located by a single up-front
+multiple sequence alignment (MSA) of the whole superfamily against the
+reference: the alignment columns of the three copper-coordinating residues
+(His443, Cys500, His505 in the reference) are mapped back to absolute residue
+numbers in each target, whose sidechain atoms (ND1/NE2 for His, SG for Cys)
+define the centroid of a 22 Å search box.  A structural Cα-superposition
+fallback handles sequences too divergent to map through the MSA columns.
 
 Each protein×ligand combination is docked 3× (seeds 1-3, exhaustiveness 24).
 Mean and SD of best-pose affinity are reported alongside a geometry filter
@@ -18,6 +21,9 @@ Dependencies (install once):
   pip install biopython rdkit requests tqdm pdb2pqr
   conda install -c conda-forge vina
   conda install -c conda-forge openbabel   # last-resort PDBQT fallback
+  conda install -c bioconda mafft          # superfamily MSA (clustalo also OK)
+  # If no MSA binary is present the pipeline falls back to a pure-Python
+  # star alignment (Bio.Align.PairwiseAligner) anchored on the reference.
 
 Directory layout expected / created:
   .
@@ -39,6 +45,7 @@ Usage:
 Options:
   --csv             Path to input CSV   (default: visible_sequences.csv)
   --reference       Path to reference PDB with T1 Cu (default: reference.pdb)
+  --msa-tool        MSA engine: mafft | clustalo      (default: mafft)
   --itl-dir         Directory with ItL*.pdb files     (default: itl_structures)
   --box-size        Search box full-edge in Å          (default: 22)
   --exhaustiveness  Vina exhaustiveness per seed       (default: 24)
@@ -119,6 +126,17 @@ def check_dependencies() -> None:
         else:
             log.info("AutoDock Vina CLI found at: %s", shutil.which("vina"))
 
+    # MSA engine is optional — a pure-Python fallback exists — so just inform.
+    msa_bin = shutil.which("mafft") or shutil.which("clustalo")
+    if msa_bin:
+        log.info("MSA engine found at: %s", msa_bin)
+    else:
+        log.warning(
+            "No MSA binary (mafft/clustalo) on PATH — T1 mapping will use the "
+            "pure-Python star-alignment fallback. Install with: "
+            "conda install -c bioconda mafft"
+        )
+
     if missing:
         log.error("Missing required packages:\n  %s", "\n  ".join(missing))
         sys.exit(1)
@@ -188,7 +206,7 @@ def collect_structures(
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 3.  T1 copper localisation via structural alignment
+# 3.  T1 copper localisation
 # ─────────────────────────────────────────────────────────────────────────────
 
 # Sequence indices (0-based, in ca_and_seq output for reference.pdb chain A)
@@ -198,6 +216,14 @@ _REF_T1_RESIDUES: List[Tuple[int, Tuple[str, ...]]] = [
     (389, ("ND1", "NE2")),   # His443
     (446, ("SG",)),           # Cys500
     (451, ("ND1", "NE2")),   # His505
+]
+
+# Label / atom / expected-residue spec for the three T1 coordinating residues,
+# in the same order as _REF_T1_RESIDUES.  Used by the MSA-mapping code paths.
+_T1_SPEC: List[Tuple[str, Tuple[str, ...], str]] = [
+    ("His1_num", ("ND1", "NE2"), "HIS"),  # His443
+    ("Cys_num",  ("SG",),        "CYS"),  # Cys500
+    ("His2_num", ("ND1", "NE2"), "HIS"),  # His505
 ]
 
 _THREE_TO_ONE = {
@@ -220,6 +246,16 @@ def _ca_and_seq(struct) -> Tuple[str, list, list]:
             cas.append(residue["CA"])
             residues.append(residue)
     return "".join(seq_chars), cas, residues
+
+
+def _seq_from_pdb(pdb_path: Path) -> str:
+    """One-letter sequence (Cα order, first model) of a PDB file."""
+    from Bio.PDB import PDBParser  # type: ignore
+
+    parser = PDBParser(QUIET=True)
+    struct = parser.get_structure("x", str(pdb_path))
+    seq, _, _ = _ca_and_seq(struct)
+    return seq
 
 
 def _build_aligner():
@@ -247,16 +283,345 @@ def get_cu_coords_from_pdb(pdb_path: Path) -> Optional[Tuple[float, float, float
     return None
 
 
+# ── 3a.  Superfamily MSA + residue-number mapping ─────────────────────────────
+
+REF_MSA_KEY = "__reference__"
+
+
+def _parse_fasta(text: str) -> dict:
+    """Parse aligned/unaligned FASTA text into an ordered {id: sequence} dict."""
+    records: dict = {}
+    header: Optional[str] = None
+    chunks: List[str] = []
+    for line in text.splitlines():
+        if line.startswith(">"):
+            if header is not None:
+                records[header] = "".join(chunks).upper()
+            header = line[1:].strip().split()[0]
+            chunks = []
+        elif line.strip():
+            chunks.append(line.strip())
+    if header is not None:
+        records[header] = "".join(chunks).upper()
+    return records
+
+
+def _run_external_msa(sequences: dict, tool_bin: str, tool_name: str) -> dict:
+    """Align `sequences` with an external mafft/clustalo binary; return {id: aln}."""
+    with tempfile.TemporaryDirectory() as td:
+        in_fa = Path(td) / "msa_in.fasta"
+        out_fa = Path(td) / "msa_out.fasta"
+        with open(in_fa, "w") as fh:
+            for sid, seq in sequences.items():
+                fh.write(f">{sid}\n{seq}\n")
+
+        if tool_name == "mafft":
+            cmd = [tool_bin, "--auto", "--quiet", str(in_fa)]
+            result = subprocess.run(cmd, capture_output=True, text=True)
+            if result.returncode != 0:
+                raise RuntimeError(result.stderr.strip()[-300:])
+            aligned_text = result.stdout
+        elif tool_name == "clustalo":
+            cmd = [tool_bin, "-i", str(in_fa), "-o", str(out_fa),
+                   "--outfmt=fasta", "--force"]
+            result = subprocess.run(cmd, capture_output=True, text=True)
+            if result.returncode != 0 or not out_fa.exists():
+                raise RuntimeError(result.stderr.strip()[-300:])
+            aligned_text = out_fa.read_text()
+        else:
+            raise ValueError(f"Unknown MSA tool: {tool_name}")
+
+        alignment = _parse_fasta(aligned_text)
+        if set(alignment) != set(sequences):
+            raise RuntimeError("MSA output is missing input sequences.")
+        return alignment
+
+
+def _gapped_pair(seq_a: str, seq_b: str, blocks) -> Tuple[str, str]:
+    """Reconstruct the two gapped strings of a PairwiseAligner alignment."""
+    a_blocks, b_blocks = blocks
+    ra: List[str] = []
+    rb: List[str] = []
+    a_prev = b_prev = 0
+    for (a_s, a_e), (b_s, b_e) in zip(a_blocks, b_blocks):
+        # Unaligned residues before this matched block become mutual gaps.
+        ra.append(seq_a[a_prev:a_s]); rb.append("-" * (a_s - a_prev))
+        ra.append("-" * (b_s - b_prev)); rb.append(seq_b[b_prev:b_s])
+        ra.append(seq_a[a_s:a_e]); rb.append(seq_b[b_s:b_e])
+        a_prev, b_prev = a_e, b_e
+    ra.append(seq_a[a_prev:]); rb.append("-" * (len(seq_a) - a_prev))
+    ra.append("-" * (len(seq_b) - b_prev)); rb.append(seq_b[b_prev:])
+    return "".join(ra), "".join(rb)
+
+
+def _star_msa_fallback(sequences: dict, ref_id: str) -> dict:
+    """
+    Pure-Python star alignment anchored on the reference sequence.
+
+    Each non-reference sequence is pairwise-aligned to the reference; the
+    pairwise alignments are merged into one equal-length matrix by reserving,
+    at every reference gap-slot, enough columns for the longest insertion seen.
+    All residues of every sequence are preserved, so downstream residue-number
+    counting stays correct.
+    """
+    aligner = _build_aligner()
+    ref_seq = sequences[ref_id]
+    n_ref = len(ref_seq)
+
+    # Per target: matched[ref_pos] = aligned char (or '-'); ins[slot] = inserted run.
+    per_target: dict = {}
+    slot_max = [0] * (n_ref + 1)
+    for sid, seq in sequences.items():
+        if sid == ref_id:
+            continue
+        try:
+            best = aligner.align(ref_seq, seq)[0]
+            r_aln, t_aln = _gapped_pair(ref_seq, seq, best.aligned)
+        except Exception as exc:
+            log.warning("    Pairwise alignment failed for %s: %s — skipped.", sid, exc)
+            continue
+
+        matched = ["-"] * n_ref
+        insertions = [""] * (n_ref + 1)
+        ref_pos = -1
+        for rc, tc in zip(r_aln, t_aln):
+            if rc != "-":
+                ref_pos += 1
+                matched[ref_pos] = tc
+            elif tc != "-":
+                insertions[ref_pos + 1] += tc
+        per_target[sid] = (matched, insertions)
+        for i in range(n_ref + 1):
+            slot_max[i] = max(slot_max[i], len(insertions[i]))
+
+    def _build_row(matched: List[str], insertions: List[str]) -> str:
+        out = [insertions[0].ljust(slot_max[0], "-")]
+        for p in range(n_ref):
+            out.append(matched[p])
+            out.append(insertions[p + 1].ljust(slot_max[p + 1], "-"))
+        return "".join(out)
+
+    alignment = {ref_id: _build_row(list(ref_seq), [""] * (n_ref + 1))}
+    for sid, (matched, insertions) in per_target.items():
+        alignment[sid] = _build_row(matched, insertions)
+    return alignment
+
+
+def generate_superfamily_msa(
+    sequences: dict,
+    msa_tool: str = "mafft",
+    ref_id: str = REF_MSA_KEY,
+) -> dict:
+    """
+    Align the reference sequence with every target sequence into one MSA.
+
+    Primary path uses an external `mafft`/`clustalo` binary via subprocess;
+    if the binary is absent or fails, a pure-Python star alignment anchored on
+    the reference is used instead (with a clear warning).  Returns an ordered
+    {protein_id: gapped_aligned_sequence} dict with equal-length rows.
+    """
+    if len(sequences) < 2:
+        return dict(sequences)
+
+    tool_bin = shutil.which(msa_tool)
+    if tool_bin:
+        log.info("Running superfamily MSA with %s on %d sequences …",
+                 msa_tool, len(sequences))
+        try:
+            alignment = _run_external_msa(sequences, tool_bin, msa_tool)
+            n_cols = len(next(iter(alignment.values())))
+            log.info("MSA complete via %s: %d sequences × %d columns.",
+                     msa_tool, len(alignment), n_cols)
+            return alignment
+        except Exception as exc:
+            log.warning("MSA tool '%s' failed (%s) — falling back to pure-Python "
+                        "star alignment.", msa_tool, exc)
+    else:
+        log.warning("MSA tool '%s' not found on PATH — falling back to pure-Python "
+                    "star alignment (Bio.Align.PairwiseAligner).", msa_tool)
+
+    log.info("Building pure-Python star alignment on %d sequences …", len(sequences))
+    alignment = _star_msa_fallback(sequences, ref_id=ref_id)
+    n_cols = len(next(iter(alignment.values()))) if alignment else 0
+    log.info("Star alignment complete: %d sequences × %d columns.",
+             len(alignment), n_cols)
+    return alignment
+
+
+def map_t1_residues(alignment: dict, ref_id: str = REF_MSA_KEY) -> dict:
+    """
+    From an MSA, map the reference T1 columns to absolute residue numbers in
+    every target sequence.
+
+    Returns {protein_id: {"His1_num": X, "Cys_num": Y, "His2_num": Z}} where the
+    numbers are 1-based positions in the target's *full* (ungapped) sequence —
+    i.e. the residue numbering used by AlphaFold models.  A value is None if the
+    target carries a gap at that alignment column.
+    """
+    if ref_id not in alignment:
+        log.warning("Reference key %r absent from MSA — no T1 mapping produced.", ref_id)
+        return {}
+
+    ref_row = alignment[ref_id]
+
+    # Reference ungapped-index → alignment column.
+    col_of_ref_idx: dict = {}
+    ungapped = -1
+    for col, ch in enumerate(ref_row):
+        if ch != "-":
+            ungapped += 1
+            col_of_ref_idx[ungapped] = col
+
+    labels = [label for label, _, _ in _T1_SPEC]
+    t1_cols: List[int] = []
+    for (ref_idx, _), label in zip(_REF_T1_RESIDUES, labels):
+        if ref_idx not in col_of_ref_idx:
+            log.warning("Reference T1 residue at seq-index %d is outside the MSA "
+                        "(%s) — mapping aborted.", ref_idx, label)
+            return {}
+        t1_cols.append(col_of_ref_idx[ref_idx])
+
+    log.info("T1 reference columns located: %s → MSA columns %s",
+             labels, t1_cols)
+
+    # Expected one-letter residue at each T1 column (HIS→H, CYS→C, …).
+    expected = [_THREE_TO_ONE.get(expect, "X") for _, _, expect in _T1_SPEC]
+
+    mapping: dict = {}
+    flagged: List[Tuple[str, List[str]]] = []
+    for pid, row in alignment.items():
+        if pid == ref_id:
+            continue
+        resnums: dict = {}
+        bad: List[str] = []
+        for label, col, exp in zip(labels, t1_cols, expected):
+            if col >= len(row) or row[col] == "-":
+                resnums[label] = None
+                bad.append(f"{label}=gap")
+            else:
+                resnums[label] = sum(1 for ch in row[: col + 1] if ch != "-")
+                if row[col] != exp:
+                    bad.append(f"{label}={row[col]}≠{exp}")
+        mapping[pid] = resnums
+        if bad:
+            flagged.append((pid, bad))
+
+    n_ok = len(mapping) - len(flagged)
+    log.info("T1 columns conserved (His/Cys/His) in %d / %d targets.",
+             n_ok, len(mapping))
+    if flagged:
+        log.warning(
+            "%d target(s) do NOT present His/Cys/His at the T1 columns and will "
+            "use the structural superposition fallback for localisation:",
+            len(flagged),
+        )
+        for pid, bad in sorted(flagged):
+            log.warning("    %-14s %s", pid, ", ".join(bad))
+    return mapping
+
+
+# ── 3b.  Per-structure T1 centroid ────────────────────────────────────────────
+
+def _t1_centroid_from_mapping(
+    mobile_pdb: Path,
+    t1_mapping: dict,
+):
+    """
+    Centroid of the T1 sidechain atoms using pre-computed residue numbers.
+
+    Returns the (x,y,z) centroid, or None if no expected residue could be
+    validated (caller then drops to the superposition fallback).
+    """
+    from Bio.PDB import PDBParser  # type: ignore
+    import numpy as np  # type: ignore
+
+    parser = PDBParser(QUIET=True)
+    struct = parser.get_structure("mob", str(mobile_pdb))
+    model = next(iter(struct))
+
+    by_num: dict = {}
+    for chain in model:
+        for res in chain:
+            if res.id[0] != " ":
+                continue
+            by_num.setdefault(res.id[1], res)   # first chain wins on clashes
+
+    coords: List["np.ndarray"] = []
+    n_ok = 0
+    for label, atom_names, expect in _T1_SPEC:
+        resnum = t1_mapping.get(label)
+        if resnum is None:
+            log.warning("    %s: no MSA column mapping for %s.", mobile_pdb.name, label)
+            continue
+        res = by_num.get(resnum)
+        if res is None:
+            log.warning("    %s: residue %d (%s) not present in PDB.",
+                        mobile_pdb.name, resnum, label)
+            continue
+        if res.resname != expect:
+            log.warning("    %s: residue %d is %s, expected %s (%s) — skipped.",
+                        mobile_pdb.name, resnum, res.resname, expect, label)
+            continue
+        n_ok += 1
+        for aname in atom_names:
+            if aname in res:
+                coords.append(res[aname].get_vector().get_array())
+            else:
+                log.warning("    %s: atom %s missing from residue %d (%s).",
+                            mobile_pdb.name, aname, resnum, label)
+
+    if not coords:
+        return None
+
+    if n_ok < len(_T1_SPEC):
+        log.warning("    %s: only %d/%d T1 residues validated via MSA — partial centroid.",
+                    mobile_pdb.name, n_ok, len(_T1_SPEC))
+
+    centroid = np.mean(coords, axis=0)
+    log.info("    MSA-mapped T1 centroid (%d/%d residues): (%.2f, %.2f, %.2f)",
+             n_ok, len(_T1_SPEC), *centroid)
+    return tuple(float(v) for v in centroid)
+
+
 def locate_t1_site(
+    mobile_pdb: Path,
+    reference_pdb: Path,
+    t1_mapping: Optional[dict] = None,
+) -> Optional[Tuple[float, float, float]]:
+    """
+    Locate the T1 Cu site in mobile_pdb.
+
+    Primary path uses the pre-computed MSA residue-number mapping
+    (`t1_mapping = {"His1_num": X, "Cys_num": Y, "His2_num": Z}`): the sidechain
+    atoms of those residues (ND1/NE2 for His, SG for Cys) are read straight from
+    the PDB and averaged into a centroid.
+
+    If no mapping is supplied, or the mapped residues cannot be validated (a
+    sequence too divergent for the MSA columns to be meaningful), it falls back
+    to the structural Cα-superposition route in `_locate_t1_via_superposition`.
+    """
+    if t1_mapping:
+        centroid = _t1_centroid_from_mapping(mobile_pdb, t1_mapping)
+        if centroid is not None:
+            return centroid
+        log.warning("  MSA mapping unusable for %s — using superposition fallback.",
+                    mobile_pdb.name)
+    else:
+        log.info("  No MSA mapping for %s — using superposition fallback.",
+                 mobile_pdb.name)
+
+    return _locate_t1_via_superposition(mobile_pdb, reference_pdb)
+
+
+def _locate_t1_via_superposition(
     mobile_pdb: Path,
     reference_pdb: Path,
 ) -> Optional[Tuple[float, float, float]]:
     """
-    Locate the T1 Cu site in mobile_pdb by mapping reference coordinating
-    residues (His443, Cys500, His505) via sequence-guided Cα alignment and
-    returning the centroid of their sidechain atoms (ND1/NE2 for His, SG for Cys).
-
-    Falls back to superposition-based Cu-coordinate transfer if no residues map.
+    Structural fallback: map reference coordinating residues (His443, Cys500,
+    His505) via on-the-fly sequence-guided Cα alignment + Superimposer, and
+    return the centroid of their sidechain atoms.  Falls back further to
+    superposition-based Cu-coordinate transfer if no residues map.
     """
     from Bio.PDB import PDBParser, Superimposer  # type: ignore
     import numpy as np  # type: ignore
@@ -355,7 +720,7 @@ def locate_t1_site(
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 3b.  Signal-peptide / disordered N-terminal trim  (AlphaFold only)
+# 3c.  Signal-peptide / disordered N-terminal trim  (AlphaFold only)
 # ─────────────────────────────────────────────────────────────────────────────
 
 PLDDT_THRESHOLD = 70.0   # Cα B-factor below this is considered low-confidence
@@ -978,6 +1343,10 @@ def parse_args():
     p.add_argument("--csv",            default="visible_sequences.csv")
     p.add_argument("--reference",      default="reference.pdb",
                    help="PDB file of a reference laccase with a CU HETATM record")
+    p.add_argument("--msa-tool",       default="mafft", dest="msa_tool",
+                   choices=["mafft", "clustalo"],
+                   help="External MSA engine (default: mafft); pure-Python "
+                        "fallback used if the binary is unavailable")
     p.add_argument("--itl-dir",        default="itl_structures", dest="itl_dir")
     p.add_argument("--box-size",       type=float, default=22.0,
                    help="Search box full-edge in Å (default: 22)")
@@ -1031,9 +1400,31 @@ def main():
         rows = list(reader)
     log.info("Loaded %d sequences from %s", len(rows), csv_path)
 
+    seq_by_header = {row["Header"]: row["Sequence"].strip() for row in rows}
+
     # ── Download / locate structures ────────────────────────────────────────
     structures = collect_structures(rows, struct_dir, itl_dir)
     log.info("%d / %d structures resolved.", len(structures), len(rows))
+
+    # ── Pre-docking MSA phase: map T1 residues across the whole superfamily ──
+    log.info("═" * 60)
+    log.info("MSA PHASE: locating T1 coordinating residues across the superfamily")
+    ref_seq = _seq_from_pdb(ref_pdb)
+    msa_input = {REF_MSA_KEY: ref_seq}
+    for uid in structures:
+        seq = seq_by_header.get(uid)
+        if seq:
+            msa_input[uid] = seq
+        else:
+            log.warning("  No CSV sequence for %s — it will use the superposition "
+                        "fallback for T1 localisation.", uid)
+
+    alignment = generate_superfamily_msa(msa_input, msa_tool=args.msa_tool)
+    t1_mapping = map_t1_residues(alignment, ref_id=REF_MSA_KEY)
+    log.info("T1 residue numbers mapped for %d / %d targets.",
+             sum(1 for m in t1_mapping.values()
+                 if all(v is not None for v in m.values())),
+             len(structures))
 
     # ── Prepare ligands ────────────────────────────────────────────────────
     lig_pdbqts: dict = {}
@@ -1088,9 +1479,9 @@ def main():
             done += len(lig_pdbqts)
             continue
 
-        # Locate T1 site in original structure
+        # Locate T1 site in original structure (MSA mapping → superposition fallback)
         log.info("  Locating T1 site …")
-        cu_coords = locate_t1_site(pdb_path, ref_pdb)
+        cu_coords = locate_t1_site(pdb_path, ref_pdb, t1_mapping=t1_mapping.get(uid))
         if cu_coords is None:
             log.warning("  Cannot determine T1 site for %s – skipping.", uid)
             done += len(lig_pdbqts)

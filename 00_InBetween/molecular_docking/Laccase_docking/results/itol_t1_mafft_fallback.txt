@@ -1,0 +1,47 @@
+TREE_COLORS
+SEPARATOR TAB
+DATASET_LABEL	T1_mafft_mapping
+COLOR	#d62728
+DATA
+A0A1R3IW35	label	#d62728	bold
+A0A1R3IW35	branch	#d62728	normal	2
+A0A2Z7A4W8	label	#d62728	bold
+A0A2Z7A4W8	branch	#d62728	normal	2
+A0A498JA70	label	#d62728	bold
+A0A498JA70	branch	#d62728	normal	2
+A0A4D6KPY7	label	#d62728	bold
+A0A4D6KPY7	branch	#d62728	normal	2
+A0A5N6LBS3	label	#d62728	bold
+A0A5N6LBS3	branch	#d62728	normal	2
+A0A5N6R8J3	label	#d62728	bold
+A0A5N6R8J3	branch	#d62728	normal	2
+A0A6A6ML18	label	#d62728	bold
+A0A6A6ML18	branch	#d62728	normal	2
+A0A7J6HXP0	label	#d62728	bold
+A0A7J6HXP0	branch	#d62728	normal	2
+A0A835JJP9	label	#d62728	bold
+A0A835JJP9	branch	#d62728	normal	2
+A0A8S9FB22	label	#d62728	bold
+A0A8S9FB22	branch	#d62728	normal	2
+A0AAD5NR99	label	#d62728	bold
+A0AAD5NR99	branch	#d62728	normal	2
+A0AAV3NMY9	label	#d62728	bold
+A0AAV3NMY9	branch	#d62728	normal	2
+A0AAV6MEL1	label	#d62728	bold
+A0AAV6MEL1	branch	#d62728	normal	2
+J3M898	label	#d62728	bold
+J3M898	branch	#d62728	normal	2
+P0A1C6	label	#d62728	bold
+P0A1C6	branch	#d62728	normal	2
+P29162	label	#d62728	bold
+P29162	branch	#d62728	normal	2
+Q00624	label	#d62728	bold
+Q00624	branch	#d62728	normal	2
+Q8VXX5	label	#d62728	bold
+Q8VXX5	branch	#d62728	normal	2
+Q9FHN6	label	#d62728	bold
+Q9FHN6	branch	#d62728	normal	2
+Q9SMW3	label	#d62728	bold
+Q9SMW3	branch	#d62728	normal	2
+Q9SU40	label	#d62728	bold
+Q9SU40	branch	#d62728	normal	2
