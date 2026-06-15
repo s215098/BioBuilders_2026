@@ -1,0 +1,6 @@
+command=BuildModel
+pdb=6EKZ_clean_model0_checked_Repair.pdb
+mutant-file=individual_list.txt
+water=-CRYSTAL
+numberOfRuns=5
+complexWithDNA=true

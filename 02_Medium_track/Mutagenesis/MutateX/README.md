@@ -1,5 +1,7 @@
 # MutateX — In Silico Saturation Mutagenesis
 
+# Obs! Not able to include HEME GROUP - so dont use for UPOs!
+
 MutateX is an automated pipeline for in-silico saturation mutagenesis of protein structures using FoldX. It computes ΔΔG values for all possible single-point mutations across a protein structure, helping identify stabilizing or destabilizing mutations.
 
 **Source:** Cancer Structural Biology Group, Danish Cancer Society Research Center / Technical University of Denmark.
@@ -34,6 +36,8 @@ You need to prepare the following files inside your protein folder before runnin
 The input protein structure in PDB format. It must be cleaned before use:
 
 - Remove HETATM records (ligands, waters) unless needed
+  - remove solvents
+  - remove (hetatm and not resn HEM)
 - Keep only the chain(s) of interest
 - Ensure no missing residues that FoldX cannot handle
 
@@ -74,17 +78,20 @@ For a quick test, you can use a subset (e.g. just `G`, `A`, `V`).
 
 A plain text file specifying **which residues to mutate**. Without this file, MutateX mutates every residue in the entire protein — which is slow and often unnecessary.
 
-Each line is one residue in the format `<Chain><ResidueNumber>`, e.g.:
+Each line is one residue in the format `<AminoAcid><Chain><ResidueNumber>`, e.g.:
 
 ```
-A100
-A101
-A145
-B32
+FA69
+DA70
+LA145
+NB32
 ```
 
-- The chain letter comes first (e.g. `A`, `B`), followed immediately by the residue number.
-- For multimeric proteins where you want to mutate symmetrically linked positions, join them with `_` on a single line: `A100_B100`
+- The **one-letter amino acid code** of the wild-type residue comes first (e.g. `F` for Phenylalanine, `D` for Aspartate).
+- Followed by the **chain letter** (e.g. `A`, `B`).
+- Followed immediately by the **residue number**.
+- To find the right amino acid code, check the PDB file: `grep "^ATOM" protein.pdb | awk '$6==69 && $3=="CA"' | awk '{print $4}'` then convert three-letter to one-letter code.
+- For multimeric proteins where you want to mutate symmetrically linked positions, join them with `_` on a single line: `FA100_FA200`
 - Residue numbers must match exactly what is in the PDB file — check with a viewer like PyMOL or by inspecting the PDB file directly.
 
 To use the position list, add `-q position_list.txt` to your run script.
@@ -294,3 +301,15 @@ ddg2logo      # sequence logo weighted by ΔΔG
 | ------- | ---------- | ------------- |
 | Laccase | 6EKZ       | `6EKZ/`       |
 | Laccase | A0A0C9VQZ5 | `A0A0C9VQZ5/` |
+
+# Post-processing results
+
+## Making a heatmap
+
+From then same protein folder run:
+
+'''bash
+ddg2heatmap -p <input-enzyme>.pdb -d results/mutation_ddgs/final_averages -l mutation_list.txt -q position_list.txt
+'''
+
+Will output a heatmap of the change in Gibbs free energy of each mutation, as a pdf.
