@@ -1,0 +1,82 @@
+ATOM      1  H   FIL T  10      62.790  63.432  26.135        3.38              
+ATOM      2  H   FIL T  10      62.760  63.368  27.132        3.57              
+CONECT    1    2
+ATOM      3  H   FIL T  10      62.684  63.302  28.122        3.92              
+CONECT    2    3
+ATOM      4  H   FIL T  10      62.494  63.073  29.065        4.24              
+CONECT    3    4
+ATOM      5  H   FIL T  10      62.453  63.034  30.002        4.51              
+CONECT    4    5
+ATOM      6  H   FIL T  10      62.559  63.362  30.930        4.70              
+CONECT    5    6
+ATOM      7  H   FIL T  10      62.855  63.349  31.838        4.75              
+CONECT    6    7
+ATOM      8  H   FIL T  10      62.636  63.396  32.813        4.87              
+CONECT    7    8
+ATOM      9  H   FIL T  10      62.609  63.300  33.787        5.04              
+CONECT    8    9
+ATOM     10  H   FIL T  10      62.813  63.716  34.673        4.88              
+CONECT    9   10
+ATOM     11  H   FIL T  10      62.980  64.119  35.572        4.87              
+CONECT   10   11
+ATOM     12  H   FIL T  10      63.148  64.523  36.471        5.01              
+CONECT   11   12
+ATOM     13  H   FIL T  10      63.438  64.809  37.355        5.16              
+CONECT   12   13
+ATOM     14  H   FIL T  10      63.704  64.920  38.313        5.15              
+CONECT   13   14
+ATOM     15  H   FIL T  10      63.972  65.030  39.270        5.29              
+CONECT   14   15
+ATOM     16  H   FIL T  10      64.088  65.090  40.250        5.53              
+CONECT   15   16
+ATOM     17  H   FIL T  10      64.089  65.120  41.250        5.88              
+CONECT   16   17
+ATOM     18  H   FIL T  10      64.090  65.150  42.249        6.34              
+CONECT   17   18
+ATOM     19  H   FIL T  10      64.091  65.179  43.249        6.90              
+CONECT   18   19
+ATOM     20  H   FIL T  10      64.012  65.186  44.196        7.49              
+CONECT   19   20
+ATOM     21  H   FIL T  10      63.138  64.931  44.609        7.67              
+CONECT   20   21
+ATOM     22  H   FIL T  10      62.569  64.764  45.148        7.84              
+CONECT   21   22
+ATOM     23  H   FIL T  10      62.002  65.588  45.148        7.10              
+CONECT   22   23
+ATOM     24  H   FIL T  10      61.434  66.411  45.148        6.42              
+CONECT   23   24
+ATOM     25  H   FIL T  10      60.867  67.234  45.148        5.81              
+CONECT   24   25
+ATOM     26  H   FIL T  10      60.299  68.058  45.148        5.30              
+CONECT   25   26
+ATOM     27  H   FIL T  10      59.732  68.881  45.149        4.90              
+CONECT   26   27
+ATOM     28  H   FIL T  10      59.148  69.685  45.229        4.65              
+CONECT   27   28
+ATOM     29  H   FIL T  10      58.773  70.593  45.316        4.33              
+CONECT   28   29
+ATOM     30  H   FIL T  10      58.489  71.504  45.569        4.06              
+CONECT   29   30
+ATOM     31  H   FIL T  10      58.210  72.385  45.949        3.95              
+CONECT   30   31
+ATOM     32  H   FIL T  10      58.142  73.324  46.227        3.80              
+CONECT   31   32
+ATOM     33  H   FIL T  10      58.304  74.073  46.690        3.60              
+CONECT   32   33
+ATOM     34  H   FIL T  10      58.109  74.790  47.296        3.18              
+CONECT   33   34
+ATOM     35  H   FIL T  10      57.732  75.588  47.766        2.86              
+CONECT   34   35
+ATOM     36  H   FIL T  10      57.352  76.387  48.232        2.76              
+CONECT   35   36
+ATOM     37  H   FIL T  10      56.965  77.187  48.690        2.89              
+CONECT   36   37
+ATOM     38  H   FIL T  10      56.604  77.998  49.146        3.21              
+CONECT   37   38
+ATOM     39  H   FIL T  10      56.378  78.863  49.595        3.62              
+CONECT   38   39
+ATOM     40  H   FIL T  10      55.967  79.717  49.660        3.99              
+CONECT   39   40
+ATOM     41  H   FIL T  10      55.457  80.565  49.518        4.42              
+CONECT   40   41
+

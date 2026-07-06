@@ -1,0 +1,150 @@
+MODEL        1
+ATOM      1  H   FIL S   1       8.523  -0.076   0.224                          
+ENDMDL
+MODEL        2
+ATOM      2  H   FIL S   1       8.809  -0.212   0.607                          
+ENDMDL
+MODEL        3
+ATOM      3  H   FIL S   1       8.955  -0.290   0.535                          
+ENDMDL
+MODEL        4
+ATOM      4  H   FIL S   1       9.051  -0.131   0.355                          
+ENDMDL
+MODEL        5
+ATOM      5  H   FIL S   1       8.580  -0.046   0.760                          
+ENDMDL
+MODEL        6
+ATOM      6  H   FIL S   1       9.225   0.034   0.295                          
+ENDMDL
+MODEL        7
+ATOM      7  H   FIL S   1       8.454  -0.057   0.318                          
+ENDMDL
+MODEL        8
+ATOM      8  H   FIL S   1       8.904  -0.060   0.797                          
+ENDMDL
+MODEL        9
+ATOM      9  H   FIL S   1       8.931  -0.205  -0.349                          
+ENDMDL
+MODEL        10
+ATOM     10  H   FIL S   1       8.631  -0.221   0.380                          
+ENDMDL
+MODEL        11
+ATOM     11  H   FIL S   1       8.896  -0.333   1.039                          
+ENDMDL
+MODEL        12
+ATOM     12  H   FIL S   1       8.661  -0.054   1.411                          
+ENDMDL
+MODEL        13
+ATOM     13  H   FIL S   1       9.021   0.010   1.916                          
+ENDMDL
+MODEL        14
+ATOM     14  H   FIL S   1       8.804   0.165   1.680                          
+ENDMDL
+MODEL        15
+ATOM     15  H   FIL S   1       9.322   0.807   1.208                          
+ENDMDL
+MODEL        16
+ATOM     16  H   FIL S   1       9.224  -0.027   0.804                          
+ENDMDL
+MODEL        17
+ATOM     17  H   FIL S   1       8.806   0.066   0.619                          
+ENDMDL
+MODEL        18
+ATOM     18  H   FIL S   1       8.699  -0.147   0.116                          
+ENDMDL
+MODEL        19
+ATOM     19  H   FIL S   1       8.909   0.064   0.268                          
+ENDMDL
+MODEL        20
+ATOM     20  H   FIL S   1       8.692  -0.211   0.521                          
+ENDMDL
+MODEL        21
+ATOM     21  H   FIL S   1       8.750  -0.095   1.158                          
+ENDMDL
+MODEL        22
+ATOM     22  H   FIL S   1       8.561   0.048  -0.141                          
+ENDMDL
+MODEL        23
+ATOM     23  H   FIL S   1       8.788   0.110   0.892                          
+ENDMDL
+MODEL        24
+ATOM     24  H   FIL S   1       9.223  -0.111   1.960                          
+ENDMDL
+MODEL        25
+ATOM     25  H   FIL S   1       7.969  -1.023   1.390                          
+ENDMDL
+MODEL        26
+ATOM     26  H   FIL S   1       9.360   0.488   1.732                          
+ENDMDL
+MODEL        27
+ATOM     27  H   FIL S   1       9.049   0.525   0.952                          
+ENDMDL
+MODEL        28
+ATOM     28  H   FIL S   1       9.069   0.225   1.928                          
+ENDMDL
+MODEL        29
+ATOM     29  H   FIL S   1       8.982  -0.022   1.594                          
+ENDMDL
+MODEL        30
+ATOM     30  H   FIL S   1       8.974  -0.173   1.298                          
+ENDMDL
+MODEL        31
+ATOM     31  H   FIL S   1       9.351  -0.321   1.294                          
+ENDMDL
+MODEL        32
+ATOM     32  H   FIL S   1       8.857  -0.201   1.029                          
+ENDMDL
+MODEL        33
+ATOM     33  H   FIL S   1       8.970  -0.469   1.770                          
+ENDMDL
+MODEL        34
+ATOM     34  H   FIL S   1       8.509  -0.606   1.851                          
+ENDMDL
+MODEL        35
+ATOM     35  H   FIL S   1       8.818   0.440   0.134                          
+ENDMDL
+MODEL        36
+ATOM     36  H   FIL S   1       8.460   0.595   0.292                          
+ENDMDL
+MODEL        37
+ATOM     37  H   FIL S   1       8.863  -0.602   2.273                          
+ENDMDL
+MODEL        38
+ATOM     38  H   FIL S   1       8.350  -1.185   1.644                          
+ENDMDL
+MODEL        39
+ATOM     39  H   FIL S   1       8.844   0.706   0.482                          
+ENDMDL
+MODEL        40
+ATOM     40  H   FIL S   1       9.050   0.034   0.057                          
+ENDMDL
+MODEL        41
+ATOM     41  H   FIL S   1       8.604  -0.142   0.348                          
+ENDMDL
+MODEL        42
+ATOM     42  H   FIL S   1       8.731  -0.181   0.507                          
+ENDMDL
+MODEL        43
+ATOM     43  H   FIL S   1       8.915  -0.152   0.537                          
+ENDMDL
+MODEL        44
+ATOM     44  H   FIL S   1       8.722   0.104   0.731                          
+ENDMDL
+MODEL        45
+ATOM     45  H   FIL S   1       9.307   0.140   1.051                          
+ENDMDL
+MODEL        46
+ATOM     46  H   FIL S   1       8.839  -0.274   0.386                          
+ENDMDL
+MODEL        47
+ATOM     47  H   FIL S   1       8.870  -0.085   1.146                          
+ENDMDL
+MODEL        48
+ATOM     48  H   FIL S   1       8.793  -0.313   0.319                          
+ENDMDL
+MODEL        49
+ATOM     49  H   FIL S   1       8.896   0.302   0.515                          
+ENDMDL
+MODEL        50
+ATOM     50  H   FIL S   1       9.177  -0.040   0.841                          
+ENDMDL

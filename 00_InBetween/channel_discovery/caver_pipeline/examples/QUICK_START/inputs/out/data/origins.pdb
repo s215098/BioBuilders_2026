@@ -1,0 +1,30 @@
+MODEL        1
+ATOM      1  H   FIL S   1       9.260  -0.859  -0.984                          
+ENDMDL
+MODEL        2
+ATOM      2  H   FIL S   1       9.578  -1.142  -1.084                          
+ENDMDL
+MODEL        3
+ATOM      3  H   FIL S   1       9.465  -1.066  -0.914                          
+ENDMDL
+MODEL        4
+ATOM      4  H   FIL S   1       9.562  -1.220  -1.048                          
+ENDMDL
+MODEL        5
+ATOM      5  H   FIL S   1       8.858  -1.002  -0.521                          
+ENDMDL
+MODEL        6
+ATOM      6  H   FIL S   1       9.647  -1.063  -1.031                          
+ENDMDL
+MODEL        7
+ATOM      7  H   FIL S   1       9.169  -0.927  -1.256                          
+ENDMDL
+MODEL        8
+ATOM      8  H   FIL S   1       9.455  -0.979  -0.982                          
+ENDMDL
+MODEL        9
+ATOM      9  H   FIL S   1       9.415  -1.588  -1.019                          
+ENDMDL
+MODEL        10
+ATOM     10  H   FIL S   1       9.347  -1.198  -0.737                          
+ENDMDL

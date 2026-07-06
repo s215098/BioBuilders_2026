@@ -1,0 +1,150 @@
+ATOM      1  H   FIL T  94      62.790  63.432  26.135        3.38              
+ATOM      2  H   FIL T  94      62.760  63.368  27.132        3.57              
+CONECT    1    2
+ATOM      3  H   FIL T  94      62.684  63.302  28.122        3.92              
+CONECT    2    3
+ATOM      4  H   FIL T  94      62.494  63.073  29.065        4.24              
+CONECT    3    4
+ATOM      5  H   FIL T  94      62.453  63.034  30.002        4.51              
+CONECT    4    5
+ATOM      6  H   FIL T  94      62.559  63.362  30.930        4.70              
+CONECT    5    6
+ATOM      7  H   FIL T  94      62.855  63.349  31.838        4.75              
+CONECT    6    7
+ATOM      8  H   FIL T  94      62.636  63.396  32.813        4.87              
+CONECT    7    8
+ATOM      9  H   FIL T  94      62.609  63.300  33.787        5.04              
+CONECT    8    9
+ATOM     10  H   FIL T  94      62.813  63.716  34.673        4.88              
+CONECT    9   10
+ATOM     11  H   FIL T  94      62.980  64.119  35.572        4.87              
+CONECT   10   11
+ATOM     12  H   FIL T  94      63.148  64.523  36.471        5.01              
+CONECT   11   12
+ATOM     13  H   FIL T  94      63.438  64.809  37.355        5.16              
+CONECT   12   13
+ATOM     14  H   FIL T  94      63.704  64.920  38.313        5.15              
+CONECT   13   14
+ATOM     15  H   FIL T  94      63.972  65.030  39.270        5.29              
+CONECT   14   15
+ATOM     16  H   FIL T  94      64.088  65.090  40.250        5.53              
+CONECT   15   16
+ATOM     17  H   FIL T  94      64.089  65.120  41.250        5.88              
+CONECT   16   17
+ATOM     18  H   FIL T  94      64.090  65.150  42.249        6.34              
+CONECT   17   18
+ATOM     19  H   FIL T  94      64.091  65.179  43.249        6.90              
+CONECT   18   19
+ATOM     20  H   FIL T  94      64.092  65.212  44.248        7.53              
+CONECT   19   20
+ATOM     21  H   FIL T  94      64.937  65.090  44.670        7.68              
+CONECT   20   21
+ATOM     22  H   FIL T  94      65.031  64.693  45.582        7.96              
+CONECT   21   22
+ATOM     23  H   FIL T  94      65.203  64.461  46.501        8.19              
+CONECT   22   23
+ATOM     24  H   FIL T  94      65.612  64.800  47.348        7.99              
+CONECT   23   24
+ATOM     25  H   FIL T  94      66.022  65.140  48.195        7.90              
+CONECT   24   25
+ATOM     26  H   FIL T  94      66.431  65.479  49.043        7.92              
+CONECT   25   26
+ATOM     27  H   FIL T  94      66.840  65.818  49.890        8.03              
+CONECT   26   27
+ATOM     28  H   FIL T  94      67.254  66.584  50.112        7.64              
+CONECT   27   28
+ATOM     29  H   FIL T  94      67.709  67.471  50.126        7.11              
+CONECT   28   29
+ATOM     30  H   FIL T  94      68.304  68.273  50.144        6.61              
+CONECT   29   30
+ATOM     31  H   FIL T  94      69.083  68.900  50.167        6.13              
+CONECT   30   31
+ATOM     32  H   FIL T  94      69.862  69.526  50.190        5.76              
+CONECT   31   32
+ATOM     33  H   FIL T  94      70.641  70.153  50.213        5.51              
+CONECT   32   33
+ATOM     34  H   FIL T  94      71.325  70.844  50.422        5.25              
+CONECT   33   34
+ATOM     35  H   FIL T  94      71.946  71.563  50.736        5.03              
+CONECT   34   35
+ATOM     36  H   FIL T  94      72.569  72.278  51.050        4.96              
+CONECT   35   36
+ATOM     37  H   FIL T  94      73.361  72.781  51.396        4.94              
+CONECT   36   37
+ATOM     38  H   FIL T  94      74.153  73.284  51.741        5.07              
+CONECT   37   38
+ATOM     39  H   FIL T  94      74.563  73.803  52.485        4.94              
+CONECT   38   39
+ATOM     40  H   FIL T  94      74.723  74.258  53.327        4.76              
+CONECT   39   40
+ATOM     41  H   FIL T  94      74.680  74.658  54.243        4.57              
+CONECT   40   41
+ATOM     42  H   FIL T  94      74.726  75.007  55.135        4.45              
+CONECT   41   42
+ATOM     43  H   FIL T  94      74.794  75.521  55.761        4.07              
+CONECT   42   43
+ATOM     44  H   FIL T  94      74.334  76.002  56.508        3.46              
+CONECT   43   44
+ATOM     45  H   FIL T  94      73.874  76.483  57.254        3.01              
+CONECT   44   45
+ATOM     46  H   FIL T  94      73.414  76.964  58.000        2.74              
+CONECT   45   46
+ATOM     47  H   FIL T  94      72.954  77.445  58.747        2.70              
+CONECT   46   47
+ATOM     48  H   FIL T  94      72.484  77.919  59.489        2.88              
+CONECT   47   48
+ATOM     49  H   FIL T  94      71.839  78.262  60.172        3.20              
+CONECT   48   49
+ATOM     50  H   FIL T  94      71.077  78.281  60.737        3.44              
+CONECT   49   50
+ATOM     51  H   FIL T  94      70.722  78.722  61.279        3.37              
+CONECT   50   51
+ATOM     52  H   FIL T  94      70.703  78.617  62.106        2.82              
+CONECT   51   52
+ATOM     53  H   FIL T  94      71.079  78.769  63.021        2.12              
+CONECT   52   53
+ATOM     54  H   FIL T  94      71.454  78.921  63.935        1.59              
+CONECT   53   54
+ATOM     55  H   FIL T  94      71.987  79.193  64.723        1.29              
+CONECT   54   55
+ATOM     56  H   FIL T  94      72.582  79.512  65.461        1.31              
+CONECT   55   56
+ATOM     57  H   FIL T  94      73.019  79.831  66.268        1.53              
+CONECT   56   57
+ATOM     58  H   FIL T  94      73.197  79.792  67.221        1.58              
+CONECT   57   58
+ATOM     59  H   FIL T  94      73.434  79.768  68.184        1.88              
+CONECT   58   59
+ATOM     60  H   FIL T  94      73.897  80.296  68.568        1.77              
+CONECT   59   60
+ATOM     61  H   FIL T  94      74.120  81.056  68.768        1.48              
+CONECT   60   61
+ATOM     62  H   FIL T  94      73.767  81.962  68.999        1.03              
+CONECT   61   62
+ATOM     63  H   FIL T  94      73.373  82.853  69.226        0.91              
+CONECT   62   63
+ATOM     64  H   FIL T  94      72.978  83.744  69.452        1.19              
+CONECT   63   64
+ATOM     65  H   FIL T  94      72.645  84.564  69.838        1.63              
+CONECT   64   65
+ATOM     66  H   FIL T  94      72.467  85.253  70.465        1.99              
+CONECT   65   66
+ATOM     67  H   FIL T  94      72.785  85.046  71.326        1.72              
+CONECT   66   67
+ATOM     68  H   FIL T  94      72.643  85.263  72.209        1.47              
+CONECT   67   68
+ATOM     69  H   FIL T  94      72.429  85.745  73.045        1.30              
+CONECT   68   69
+ATOM     70  H   FIL T  94      72.202  86.325  73.826        1.32              
+CONECT   69   70
+ATOM     71  H   FIL T  94      71.940  86.827  74.630        1.61              
+CONECT   70   71
+ATOM     72  H   FIL T  94      71.503  87.014  75.510        1.97              
+CONECT   71   72
+ATOM     73  H   FIL T  94      71.900  87.119  76.399        2.08              
+CONECT   72   73
+ATOM     74  H   FIL T  94      72.312  87.273  77.289        2.41              
+CONECT   73   74
+ATOM     75  H   FIL T  94      72.679  87.822  77.924        2.57              
+CONECT   74   75
+

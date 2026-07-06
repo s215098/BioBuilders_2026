@@ -1,0 +1,12 @@
+== Times in milliseconds (fraction) ==
+all: 789.348676 (1.0)
+cluster tunnels: 375.741225 (0.47)
+layers 1: 9.932919 (0.01)
+layers 3: 39.899928 (0.05)
+layers 4: 1.547889 (0.0)
+loading Tunnels: 143.56384 (0.18)
+output analyses: 406.793023 (0.51)
+saving visualization: 247.701450 (0.31)
+statistics clusters: 22.426170 (0.02)
+tunnel characteristics: 11.224056 (0.01)
+tunnel profiles: 108.515377 (0.13)

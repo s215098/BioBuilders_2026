@@ -1,0 +1,110 @@
+Caver computation started.
+Merging all PDB files into one multimodel PDB file.
+Settings loaded from:
+.\config.txt
+
+Basic parameters:
+starting_point_atom 578 1609 3258
+probe_radius 0.9
+shell_radius 3.0
+shell_depth 4.0
+frame_weighting_coefficient 1.0
+frame_clustering_threshold 1.0
+
+*** Processing 1.pdb ***
+3 redundant tunnels removed.
+1 tunnels stored.
+*** Processing 2.pdb ***
+16 redundant tunnels removed.
+4 tunnels stored.
+*** Processing 3.pdb ***
+13 redundant tunnels removed.
+5 tunnels stored.
+*** Processing 4.pdb ***
+19 redundant tunnels removed.
+5 tunnels stored.
+*** Processing 5.pdb ***
+12 redundant tunnels removed.
+4 tunnels stored.
+*** Processing 6.pdb ***
+18 redundant tunnels removed.
+3 tunnels stored.
+*** Processing 7.pdb ***
+6 redundant tunnels removed.
+3 tunnels stored.
+*** Processing 8.pdb ***
+22 redundant tunnels removed.
+4 tunnels stored.
+*** Processing 9.pdb ***
+11 redundant tunnels removed.
+2 tunnels stored.
+*** Processing 10.pdb ***
+25 redundant tunnels removed.
+3 tunnels stored.
+
+Loading tunnels from C:\Downloads\caver_3.0(8)\caver_3.0\examples\QUICK_START\inputs\out\data\tunnels\tunnels_1.pdb.obj
+Loaded 1 tunnels for 1.pdb.
+1 tunnels successfully loaded.
+Loading tunnels from C:\Downloads\caver_3.0(8)\caver_3.0\examples\QUICK_START\inputs\out\data\tunnels\tunnels_2.pdb.obj
+Loaded 4 tunnels for 2.pdb.
+5 tunnels successfully loaded.
+Loading tunnels from C:\Downloads\caver_3.0(8)\caver_3.0\examples\QUICK_START\inputs\out\data\tunnels\tunnels_3.pdb.obj
+Loaded 5 tunnels for 3.pdb.
+10 tunnels successfully loaded.
+Loading tunnels from C:\Downloads\caver_3.0(8)\caver_3.0\examples\QUICK_START\inputs\out\data\tunnels\tunnels_4.pdb.obj
+Loaded 5 tunnels for 4.pdb.
+15 tunnels successfully loaded.
+Loading tunnels from C:\Downloads\caver_3.0(8)\caver_3.0\examples\QUICK_START\inputs\out\data\tunnels\tunnels_5.pdb.obj
+Loaded 4 tunnels for 5.pdb.
+19 tunnels successfully loaded.
+Loading tunnels from C:\Downloads\caver_3.0(8)\caver_3.0\examples\QUICK_START\inputs\out\data\tunnels\tunnels_6.pdb.obj
+Loaded 3 tunnels for 6.pdb.
+22 tunnels successfully loaded.
+Loading tunnels from C:\Downloads\caver_3.0(8)\caver_3.0\examples\QUICK_START\inputs\out\data\tunnels\tunnels_7.pdb.obj
+Loaded 3 tunnels for 7.pdb.
+25 tunnels successfully loaded.
+Loading tunnels from C:\Downloads\caver_3.0(8)\caver_3.0\examples\QUICK_START\inputs\out\data\tunnels\tunnels_8.pdb.obj
+Loaded 4 tunnels for 8.pdb.
+29 tunnels successfully loaded.
+Loading tunnels from C:\Downloads\caver_3.0(8)\caver_3.0\examples\QUICK_START\inputs\out\data\tunnels\tunnels_9.pdb.obj
+Loaded 2 tunnels for 9.pdb.
+31 tunnels successfully loaded.
+Loading tunnels from C:\Downloads\caver_3.0(8)\caver_3.0\examples\QUICK_START\inputs\out\data\tunnels\tunnels_10.pdb.obj
+Loaded 3 tunnels for 10.pdb.
+34 tunnels successfully loaded.
+
+Computing average surface for 34 tunnels.
+Average surface represented by 11 points.
+Computing distance matrix using weighting_coefficient 1.0.
+Performing average link hierarchical of 34 tunnels clustering to create .\out\data\tree_.txt.
+Total java memory: 608 MB.
+Allocating 408 MB of RAM...
+Maximum allowed cluster-cluster distance matrix size is 14286, in case of memory error in the next computation phase, try to set the parameter murtagh_matrix_size to a lower value in config.txt.
+34 tunnels clustered into 2 clusters using clustering_threshold 3.5.
+
+Leaving only the cheapest tunnel per cluster per snapshot - 19 tunnels kept.
+Statistical analysis of results started.
+Saving summary information.
+Saving profile heat maps.
+Saving bottleneck heat maps.
+Saving tunnel characteristics.
+Saving tunnel-lining residues and atoms.
+Saving bottlenecks.
+Saving tunnel profiles.
+Saving histograms.
+Statistical analysis finished.
+Visualizations started.
+Cluster subsampling for visualization: random.
+Visualizations finished.
+
+Finished successfully.
+
+-----------------------------------------------------------------------
+ Thank you for using CAVER, please cite:
+
+ Chovancova, E., Pavelka, A., Benes, P., Strnad, O., Brezovsky, J.,
+ Kozlikova, B., Gora, A., Sustr, V., Klvana, M., Medek, P.,
+ Biedermannova, L., Sochor, J. Damborsky, J. (2012) CAVER 3.0: A Tool
+ for the Analysis of Transport Pathways in Dynamic Protein Structures.
+ PLoS Comput Biol 8: e1002708. doi:10.1371/journal.pcbi.1002708
+-----------------------------------------------------------------------

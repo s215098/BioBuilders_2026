@@ -1,0 +1,182 @@
+Caver computation started.
+Merging all PDB files into one multimodel PDB file.
+Loading tunnels from C:\caver_3.0\examples\guided_example\inputs\out\data\tunnels\tunnels_1.pdb.obj
+Loaded 1 tunnels for 1.pdb.
+1 tunnels successfully loaded.
+Loading tunnels from C:\caver_3.0\examples\guided_example\inputs\out\data\tunnels\tunnels_2.pdb.obj
+Loaded 4 tunnels for 2.pdb.
+5 tunnels successfully loaded.
+Loading tunnels from C:\caver_3.0\examples\guided_example\inputs\out\data\tunnels\tunnels_3.pdb.obj
+Loaded 5 tunnels for 3.pdb.
+10 tunnels successfully loaded.
+Loading tunnels from C:\caver_3.0\examples\guided_example\inputs\out\data\tunnels\tunnels_4.pdb.obj
+Loaded 5 tunnels for 4.pdb.
+15 tunnels successfully loaded.
+Loading tunnels from C:\caver_3.0\examples\guided_example\inputs\out\data\tunnels\tunnels_5.pdb.obj
+Loaded 4 tunnels for 5.pdb.
+19 tunnels successfully loaded.
+Loading tunnels from C:\caver_3.0\examples\guided_example\inputs\out\data\tunnels\tunnels_6.pdb.obj
+Loaded 3 tunnels for 6.pdb.
+22 tunnels successfully loaded.
+Loading tunnels from C:\caver_3.0\examples\guided_example\inputs\out\data\tunnels\tunnels_7.pdb.obj
+Loaded 3 tunnels for 7.pdb.
+25 tunnels successfully loaded.
+Loading tunnels from C:\caver_3.0\examples\guided_example\inputs\out\data\tunnels\tunnels_8.pdb.obj
+Loaded 4 tunnels for 8.pdb.
+29 tunnels successfully loaded.
+Loading tunnels from C:\caver_3.0\examples\guided_example\inputs\out\data\tunnels\tunnels_9.pdb.obj
+Loaded 2 tunnels for 9.pdb.
+31 tunnels successfully loaded.
+Loading tunnels from C:\caver_3.0\examples\guided_example\inputs\out\data\tunnels\tunnels_10.pdb.obj
+Loaded 3 tunnels for 10.pdb.
+34 tunnels successfully loaded.
+Loading tunnels from C:\caver_3.0\examples\guided_example\inputs\out\data\tunnels\tunnels_11.pdb.obj
+Loaded 3 tunnels for 11.pdb.
+37 tunnels successfully loaded.
+Loading tunnels from C:\caver_3.0\examples\guided_example\inputs\out\data\tunnels\tunnels_12.pdb.obj
+Loaded 4 tunnels for 12.pdb.
+41 tunnels successfully loaded.
+Loading tunnels from C:\caver_3.0\examples\guided_example\inputs\out\data\tunnels\tunnels_13.pdb.obj
+Loaded 4 tunnels for 13.pdb.
+45 tunnels successfully loaded.
+Loading tunnels from C:\caver_3.0\examples\guided_example\inputs\out\data\tunnels\tunnels_14.pdb.obj
+Loaded 2 tunnels for 14.pdb.
+47 tunnels successfully loaded.
+Loading tunnels from C:\caver_3.0\examples\guided_example\inputs\out\data\tunnels\tunnels_15.pdb.obj
+Loaded 2 tunnels for 15.pdb.
+49 tunnels successfully loaded.
+Loading tunnels from C:\caver_3.0\examples\guided_example\inputs\out\data\tunnels\tunnels_16.pdb.obj
+Loaded 2 tunnels for 16.pdb.
+51 tunnels successfully loaded.
+Loading tunnels from C:\caver_3.0\examples\guided_example\inputs\out\data\tunnels\tunnels_17.pdb.obj
+Loaded 1 tunnels for 17.pdb.
+52 tunnels successfully loaded.
+Loading tunnels from C:\caver_3.0\examples\guided_example\inputs\out\data\tunnels\tunnels_18.pdb.obj
+Loaded 2 tunnels for 18.pdb.
+54 tunnels successfully loaded.
+Loading tunnels from C:\caver_3.0\examples\guided_example\inputs\out\data\tunnels\tunnels_19.pdb.obj
+Loaded 1 tunnels for 19.pdb.
+55 tunnels successfully loaded.
+Loading tunnels from C:\caver_3.0\examples\guided_example\inputs\out\data\tunnels\tunnels_20.pdb.obj
+Loaded 1 tunnels for 20.pdb.
+56 tunnels successfully loaded.
+Loading tunnels from C:\caver_3.0\examples\guided_example\inputs\out\data\tunnels\tunnels_21.pdb.obj
+Loaded 3 tunnels for 21.pdb.
+59 tunnels successfully loaded.
+Loading tunnels from C:\caver_3.0\examples\guided_example\inputs\out\data\tunnels\tunnels_22.pdb.obj
+Loaded 3 tunnels for 22.pdb.
+62 tunnels successfully loaded.
+Loading tunnels from C:\caver_3.0\examples\guided_example\inputs\out\data\tunnels\tunnels_23.pdb.obj
+Loaded 2 tunnels for 23.pdb.
+64 tunnels successfully loaded.
+Loading tunnels from C:\caver_3.0\examples\guided_example\inputs\out\data\tunnels\tunnels_24.pdb.obj
+Loaded 2 tunnels for 24.pdb.
+66 tunnels successfully loaded.
+Loading tunnels from C:\caver_3.0\examples\guided_example\inputs\out\data\tunnels\tunnels_25.pdb.obj
+Loaded 2 tunnels for 25.pdb.
+68 tunnels successfully loaded.
+Loading tunnels from C:\caver_3.0\examples\guided_example\inputs\out\data\tunnels\tunnels_26.pdb.obj
+Loaded 4 tunnels for 26.pdb.
+72 tunnels successfully loaded.
+Loading tunnels from C:\caver_3.0\examples\guided_example\inputs\out\data\tunnels\tunnels_27.pdb.obj
+Loaded 3 tunnels for 27.pdb.
+75 tunnels successfully loaded.
+Loading tunnels from C:\caver_3.0\examples\guided_example\inputs\out\data\tunnels\tunnels_28.pdb.obj
+Loaded 2 tunnels for 28.pdb.
+77 tunnels successfully loaded.
+Loading tunnels from C:\caver_3.0\examples\guided_example\inputs\out\data\tunnels\tunnels_29.pdb.obj
+Loaded 3 tunnels for 29.pdb.
+80 tunnels successfully loaded.
+Loading tunnels from C:\caver_3.0\examples\guided_example\inputs\out\data\tunnels\tunnels_30.pdb.obj
+Loaded 4 tunnels for 30.pdb.
+84 tunnels successfully loaded.
+Loading tunnels from C:\caver_3.0\examples\guided_example\inputs\out\data\tunnels\tunnels_31.pdb.obj
+Loaded 5 tunnels for 31.pdb.
+89 tunnels successfully loaded.
+Loading tunnels from C:\caver_3.0\examples\guided_example\inputs\out\data\tunnels\tunnels_32.pdb.obj
+Loaded 3 tunnels for 32.pdb.
+92 tunnels successfully loaded.
+Loading tunnels from C:\caver_3.0\examples\guided_example\inputs\out\data\tunnels\tunnels_33.pdb.obj
+Loaded 3 tunnels for 33.pdb.
+95 tunnels successfully loaded.
+Loading tunnels from C:\caver_3.0\examples\guided_example\inputs\out\data\tunnels\tunnels_34.pdb.obj
+Loaded 2 tunnels for 34.pdb.
+97 tunnels successfully loaded.
+Loading tunnels from C:\caver_3.0\examples\guided_example\inputs\out\data\tunnels\tunnels_35.pdb.obj
+Loaded 2 tunnels for 35.pdb.
+99 tunnels successfully loaded.
+Loading tunnels from C:\caver_3.0\examples\guided_example\inputs\out\data\tunnels\tunnels_36.pdb.obj
+Loaded 4 tunnels for 36.pdb.
+103 tunnels successfully loaded.
+Loading tunnels from C:\caver_3.0\examples\guided_example\inputs\out\data\tunnels\tunnels_37.pdb.obj
+Loaded 3 tunnels for 37.pdb.
+106 tunnels successfully loaded.
+Loading tunnels from C:\caver_3.0\examples\guided_example\inputs\out\data\tunnels\tunnels_38.pdb.obj
+Loaded 5 tunnels for 38.pdb.
+111 tunnels successfully loaded.
+Loading tunnels from C:\caver_3.0\examples\guided_example\inputs\out\data\tunnels\tunnels_39.pdb.obj
+Loaded 2 tunnels for 39.pdb.
+113 tunnels successfully loaded.
+Loading tunnels from C:\caver_3.0\examples\guided_example\inputs\out\data\tunnels\tunnels_40.pdb.obj
+Loaded 1 tunnels for 40.pdb.
+114 tunnels successfully loaded.
+Loading tunnels from C:\caver_3.0\examples\guided_example\inputs\out\data\tunnels\tunnels_41.pdb.obj
+Loaded 3 tunnels for 41.pdb.
+117 tunnels successfully loaded.
+Loading tunnels from C:\caver_3.0\examples\guided_example\inputs\out\data\tunnels\tunnels_42.pdb.obj
+Loaded 3 tunnels for 42.pdb.
+120 tunnels successfully loaded.
+Loading tunnels from C:\caver_3.0\examples\guided_example\inputs\out\data\tunnels\tunnels_43.pdb.obj
+Loaded 6 tunnels for 43.pdb.
+126 tunnels successfully loaded.
+Loading tunnels from C:\caver_3.0\examples\guided_example\inputs\out\data\tunnels\tunnels_44.pdb.obj
+Loaded 5 tunnels for 44.pdb.
+131 tunnels successfully loaded.
+Loading tunnels from C:\caver_3.0\examples\guided_example\inputs\out\data\tunnels\tunnels_45.pdb.obj
+Loaded 6 tunnels for 45.pdb.
+137 tunnels successfully loaded.
+Loading tunnels from C:\caver_3.0\examples\guided_example\inputs\out\data\tunnels\tunnels_46.pdb.obj
+Loaded 1 tunnels for 46.pdb.
+138 tunnels successfully loaded.
+Loading tunnels from C:\caver_3.0\examples\guided_example\inputs\out\data\tunnels\tunnels_47.pdb.obj
+Loaded 1 tunnels for 47.pdb.
+139 tunnels successfully loaded.
+Loading tunnels from C:\caver_3.0\examples\guided_example\inputs\out\data\tunnels\tunnels_48.pdb.obj
+Loaded 2 tunnels for 48.pdb.
+141 tunnels successfully loaded.
+Loading tunnels from C:\caver_3.0\examples\guided_example\inputs\out\data\tunnels\tunnels_49.pdb.obj
+Loaded 2 tunnels for 49.pdb.
+143 tunnels successfully loaded.
+Loading tunnels from C:\caver_3.0\examples\guided_example\inputs\out\data\tunnels\tunnels_50.pdb.obj
+Loaded 2 tunnels for 50.pdb.
+145 tunnels successfully loaded.
+
+Loading old cluster tree from .\out\data\tree.txt
+145 tunnels clustered into 5 clusters using clustering_threshold 4.0.
+
+Leaving only the cheapest tunnel per cluster per snapshot - 83 tunnels kept.
+Statistical analysis of results started.
+Saving summary information.
+Saving profile heat maps.
+Saving bottleneck heat maps.
+Saving tunnel characteristics.
+Saving tunnel-lining residues and atoms.
+Saving bottlenecks.
+Saving tunnel profiles.
+Saving histograms.
+Statistical analysis finished.
+Visualizations started.
+Cluster subsampling for visualization: random.
+Visualizations finished.
+
+Finished successfully.
+
+-----------------------------------------------------------------------
+ Thank you for using CAVER, please cite:
+
+ Chovancova, E., Pavelka, A., Benes, P., Strnad, O., Brezovsky, J.,
+ Kozlikova, B., Gora, A., Sustr, V., Klvana, M., Medek, P.,
+ Biedermannova, L., Sochor, J. Damborsky, J. (2012) CAVER 3.0: A Tool
+ for the Analysis of Transport Pathways in Dynamic Protein Structures.
+ PLoS Comput Biol 8: e1002708. doi:10.1371/journal.pcbi.1002708
+-----------------------------------------------------------------------

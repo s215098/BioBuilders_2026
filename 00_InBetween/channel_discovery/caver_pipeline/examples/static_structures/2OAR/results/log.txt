@@ -1,0 +1,45 @@
+Caver computation started.
+Settings loaded from:
+.\config.txt
+
+Basic parameters:
+starting_point_coordinates [62.15, 160.98, -0.05]
+probe_radius 0.6
+shell_radius 15.0
+shell_depth 4.0
+frame_weighting_coefficient 1.0
+frame_clustering_threshold 2.0
+
+*** Processing 2OAR.pdb ***
+2472 redundant tunnels removed.
+137 tunnels stored.
+
+Loading tunnels from E:\projects\caver\ms\manual\187_03\caver_3.0\examples\static_structures\2OAR\inputs\out\data\tunnels\tunnels_2OAR.pdb.obj
+Loaded 137 tunnels for 2OAR.pdb.
+137 tunnels successfully loaded.
+
+Computing distance matrix using weighting_coefficient 1.0.
+Performing average link hierarchical clustering to create .\out\data\tree.txt.
+137 tunnels clustered into 65 clusters using clustering_threshold 3.5.
+
+Leaving only the cheapest tunnel per cluster per snapshot - 65 tunnels kept.
+Statistical analysis of results started.
+Saving summary information.
+Saving tunnel characteristics.
+Saving tunnel profiles.
+Statistical analysis finished.
+Visualizations started.
+Cluster subsampling for visualization: random.
+Visualizations finished.
+
+Finished successfully.
+
+-----------------------------------------------------------------------
+ Thank you for using CAVER, please cite:
+
+ Chovancova, E., Pavelka, A., Benes, P., Strnad, O., Brezovsky, J.,
+ Kozlikova, B., Gora, A., Sustr, V., Klvana, M., Medek, P.,
+ Biedermannova, L., Sochor, J. Damborsky, J. (2012) CAVER 3.0: A Tool
+ for the Analysis of Transport Pathways in Dynamic Protein Structures.
+ PLoS Comput Biol 8: e1002708. doi:10.1371/journal.pcbi.1002708
+-----------------------------------------------------------------------

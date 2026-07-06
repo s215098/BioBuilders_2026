@@ -1,0 +1,28 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build-and-test-linux:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: netcdf
+      run: sudo apt-get install libnetcdf-dev
+    - name: make
+      run: make fpocket
+    - name: Set up Python 3.12
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.12
+    - name: create conda environment
+      run: conda env update -f ./tests/environment.yml   
+    - name : activate
+      run : |
+            eval "$(conda shell.bash hook)"
+            conda activate fpocket_test
+            pytest

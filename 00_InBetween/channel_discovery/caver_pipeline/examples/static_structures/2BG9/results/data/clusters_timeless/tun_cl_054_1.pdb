@@ -1,0 +1,36 @@
+ATOM      1  H   FIL T  54      62.790  63.432  26.135        3.38              
+ATOM      2  H   FIL T  54      62.760  63.368  27.132        3.57              
+CONECT    1    2
+ATOM      3  H   FIL T  54      62.684  63.302  28.122        3.92              
+CONECT    2    3
+ATOM      4  H   FIL T  54      62.741  63.853  28.705        3.79              
+CONECT    3    4
+ATOM      5  H   FIL T  54      63.033  64.760  29.003        3.50              
+CONECT    4    5
+ATOM      6  H   FIL T  54      63.440  65.583  28.864        3.18              
+CONECT    5    6
+ATOM      7  H   FIL T  54      64.136  66.301  28.869        2.76              
+CONECT    6    7
+ATOM      8  H   FIL T  54      64.796  66.842  29.221        2.50              
+CONECT    7    8
+ATOM      9  H   FIL T  54      65.221  67.624  29.677        2.09              
+CONECT    8    9
+ATOM     10  H   FIL T  54      65.684  68.403  30.099        1.90              
+CONECT    9   10
+ATOM     11  H   FIL T  54      65.776  69.348  30.174        1.66              
+CONECT   10   11
+ATOM     12  H   FIL T  54      65.727  70.346  30.128        1.60              
+CONECT   11   12
+ATOM     13  H   FIL T  54      66.349  70.836  29.569        1.13              
+CONECT   12   13
+ATOM     14  H   FIL T  54      67.000  71.241  28.927        0.87              
+CONECT   13   14
+ATOM     15  H   FIL T  54      67.627  71.710  28.628        0.85              
+CONECT   14   15
+ATOM     16  H   FIL T  54      68.073  72.334  29.244        0.76              
+CONECT   15   16
+ATOM     17  H   FIL T  54      68.571  73.176  29.448        0.89              
+CONECT   16   17
+ATOM     18  H   FIL T  54      69.062  73.984  29.701        1.34              
+CONECT   17   18
+

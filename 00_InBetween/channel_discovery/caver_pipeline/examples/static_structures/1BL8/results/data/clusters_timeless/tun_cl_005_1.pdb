@@ -1,0 +1,20 @@
+ATOM      1  H   FIL T   5      82.561  26.438  46.280        2.42              
+ATOM      2  H   FIL T   5      82.135  27.309  46.281        1.84              
+CONECT    1    2
+ATOM      3  H   FIL T   5      81.747  28.230  46.301        1.42              
+CONECT    2    3
+ATOM      4  H   FIL T   5      81.352  29.148  46.333        1.29              
+CONECT    3    4
+ATOM      5  H   FIL T   5      80.965  30.069  46.364        1.50              
+CONECT    4    5
+ATOM      6  H   FIL T   5      80.485  30.792  45.878        1.65              
+CONECT    5    6
+ATOM      7  H   FIL T   5      79.828  31.467  45.697        1.98              
+CONECT    6    7
+ATOM      8  H   FIL T   5      79.063  32.111  45.716        2.48              
+CONECT    7    8
+ATOM      9  H   FIL T   5      78.609  32.895  45.665        2.57              
+CONECT    8    9
+ATOM     10  H   FIL T   5      77.964  33.649  45.786        2.55              
+CONECT    9   10
+

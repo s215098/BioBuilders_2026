@@ -1,0 +1,8 @@
+nbproject
+*.o
+.vscode
+src/qhull/bin/
+src/qhull/lib/libqhullstatic_r.a
+src/qhull/lib/libqhullstatic.a
+*.pyc
+vmd/plugins

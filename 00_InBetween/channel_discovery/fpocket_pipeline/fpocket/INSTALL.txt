@@ -1,0 +1,48 @@
+
+===========================
+DEPENDENCIES              :
+===========================
+1: In order to install fpocket 3 you need to install libnetcdf & libstdc++ 
+libraries
+
+
+===========================
+INSTALLATION INSTRUCTIONS :
+===========================
+
+1: Installing the fpocket release :
+
+> untar, make, make test, make install < 
+
+Please untar the fpocket-src-3.0.tgz file in a local folder by typing and move
+to the extracted folder :
+
+>>> tar -xzf fpocket-src-3.0.tgz
+>>> cd fpocket-src-3.0/
+
+Next, you have to compile and test the distribution. You do NOT
+need root priveledges for this operation : 
+
+>>> make
+
+If no errors occur during the compilation and during the test, you
+can install fpocket in your distribution by typing the following line. 
+Be careful, for this you might need root priveledges. 
+If you want to put the executables whereever you want, you can find 
+them in the fpocket-src-3.0/bin directory. Else, for final installation
+type :
+
+>>> make install
+
+You should be able to run fpocket, dpocket and tpocket from everywhere.
+
+-------------------------------------------------------------------------------
+2: Uninstalling fpocket :
+
+> make uninstall <
+
+In order to uninstall fpocket, dpocket, tpocket and corresponding manual 
+entries simply go to your fpocket-src-1.0 directory and type : 
+
+>>> make uninstall
+

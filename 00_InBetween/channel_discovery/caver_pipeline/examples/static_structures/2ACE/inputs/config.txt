@@ -1,0 +1,14 @@
+#Config file for analysis of 2ACE
+
+#*****************************
+# TUNNEL CALCULATION
+#*****************************
+starting_point_coordinates 4.397 68.330 63.294                     
+probe_radius 0.6
+shell_radius 5
+
+#*****************************
+# ADVANCED SETTINGS
+#*****************************
+frame_clustering_threshold 2
+seed 1    

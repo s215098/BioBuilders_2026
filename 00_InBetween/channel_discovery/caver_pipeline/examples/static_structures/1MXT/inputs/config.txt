@@ -1,0 +1,13 @@
+#Config file for analysis of 1MTX
+
+#*****************************
+# TUNNEL CALCULATION
+#*****************************
+starting_point_coordinates 17.083 -0.533 12.495       
+probe_radius 0.6
+
+#*****************************
+# ADVANCED SETTINGS
+#*****************************
+frame_clustering_threshold 2
+seed 1    

@@ -1,0 +1,17 @@
+#Config file for analysis of 2BG9
+
+#*****************************
+# TUNNEL CALCULATION
+#*****************************
+starting_point_coordinates 61.17 63.44 23.86
+probe_radius 0.6
+shell_radius 15
+
+#*****************************
+# ADVANCED SETTINGS
+#*****************************
+frame_clustering_threshold 2
+seed 1    
+average_surface_frame no
+average_surface_global no
+number_of_approximating_balls 4
